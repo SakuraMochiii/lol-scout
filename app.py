@@ -75,6 +75,19 @@ def manage():
     return render_template("manage.html", data=data)
 
 
+@app.route("/export")
+def export_page():
+    from datetime import datetime, timezone
+    data = storage.load()
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    html = render_template("export.html", data=data, now=now)
+    filename = f"lol_ims_info_{data['meta']['season_name'].replace(' ', '_')}.html"
+    return html, 200, {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": "text/html; charset=utf-8",
+    }
+
+
 # --- API routes ---
 
 

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ data.meta.season_name }} — LOL IMs Info</title>
+<style>
+:root {
+  --bg: #0a0e14; --bg-card: #111827; --bg-hover: #1e293b; --border: #2d3748;
+  --text: #e2e8f0; --text-muted: #718096; --gold: #c8aa6e; --accent: #0ea5e9;
+  --red: #ef4444; --green: #22c55e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+h2 { font-size: 16px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.header { text-align: center; padding: 32px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.header .sub { color: var(--text-muted); font-size: 13px; }
+.team-section { margin-bottom: 24px; }
+.team-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.my-team-badge { display: inline-block; background: var(--gold); color: #000; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.player-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; overflow: hidden; }
+.player-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; }
+.player-header:hover { background: var(--bg-hover); }
+.player-body { padding: 0 16px 16px; display: none; }
+.role-tag { display: inline-block; width: 32px; text-align: center; font-size: 11px; font-weight: 600; padding: 2px 0; border-radius: 4px; background: var(--bg-hover); color: var(--text-muted); }
+.player-name { font-weight: 600; font-size: 14px; flex: 1; }
+.player-name .tag { color: var(--text-muted); font-weight: 400; }
+.tier-badge { font-size: 12px; font-weight: 600; }
+.current-rank-inline { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.past-rank-inline { font-size: 11px; color: #a78bfa; font-style: italic; }
+.wr-badge { font-size: 12px; font-weight: 600; }
+.good { color: var(--green); }
+.bad { color: var(--red); }
+.games-count { font-size: 12px; color: var(--text-muted); }
+.expand-arrow { color: var(--text-muted); font-size: 10px; transition: transform 0.2s; }
+.expand-arrow.open { transform: rotate(180deg); }
+.extra-ranks { display: flex; gap: 16px; margin-bottom: 8px; padding: 6px 10px; background: var(--bg); border-radius: 4px; font-size: 13px; flex-wrap: wrap; }
+.muted { color: var(--text-muted); font-size: 13px; }
+.champ-list { font-size: 13px; }
+.champ-list-header { display: grid; grid-template-columns: 1fr 50px 120px 70px; gap: 8px; padding: 4px 0; font-size: 11px; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.champ-row { display: grid; grid-template-columns: 1fr 50px 120px 70px; gap: 8px; align-items: center; padding: 5px 0; }
+.champ-info { display: flex; align-items: center; gap: 8px; }
+.champ-icon { width: 28px; height: 28px; border-radius: 4px; }
+.champ-name { font-weight: 500; }
+.champ-role-tag { font-size: 10px; color: var(--text-muted); background: var(--bg); padding: 1px 5px; border-radius: 3px; }
+.otp-badge { font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: #7f1d1d; color: #fca5a5; }
+.main-badge { font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: #1e3a5f; color: #93c5fd; }
+.champ-games { color: var(--text-muted); font-size: 12px; text-align: right; }
+.wr-bar-container { position: relative; background: #1a1a2e; border-radius: 4px; height: 20px; overflow: hidden; }
+.wr-bar { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #1e40af, #3b82f6); border-radius: 4px; min-width: 2px; }
+.wr-text { position: relative; z-index: 1; font-size: 12px; font-weight: 600; line-height: 20px; padding-left: 6px; }
+.champ-kda { font-size: 12px; color: var(--text-muted); text-align: right; }
+.player-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.player-tab { padding: 4px 14px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; }
+.player-tab.active { background: #0369a1; border-color: #0284c7; color: white; }
+.mastery-header { grid-template-columns: 1fr 50px 80px 90px; }
+[data-tab="mastery"] .champ-row { grid-template-columns: 1fr 50px 80px 90px; }
+.mastery-level { font-weight: 600; color: var(--gold); font-size: 12px; text-align: right; }
+.mastery-points { font-size: 12px; text-align: right; }
+.mastery-date { font-size: 11px; text-align: right; }
+.season-history { margin-top: 6px; font-size: 13px; }
+.season-history summary { cursor: pointer; padding: 4px 0; }
+.season-row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--border); }
+.season-name { color: var(--accent); font-weight: 600; min-width: 70px; }
+.footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>{{ data.meta.season_name }}</h1>
+  <div class="sub">LOL IMs Info &mdash; Exported {{ now }}</div>
+</div>
+<div class="container">
+{% for team in data.teams %}
+<div class="team-section">
+  <div class="team-name">
+    {{ team.name }}
+    {% if data.meta.my_team_id == team.id %}
+    <span class="my-team-badge">MY TEAM</span>
+    {% endif %}
+  </div>
+
+  {% for player in team.players %}
+  {% set stats = player.stats %}
+  <div class="player-card">
+    <div class="player-header" onclick="toggle(this)">
+      <span class="role-tag">{{ player.role[:3].upper() }}</span>
+      <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
+      {% if stats %}
+      {% if stats.peak_tier %}
+      <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">{{ stats.peak_tier }}</span>
+      {% endif %}
+      {% if stats.tier != 'UNRANKED' %}
+      <span class="current-rank-inline">{{ player|tier_display }}</span>
+      {% else %}
+      <span class="current-rank-inline">Unranked</span>
+      {% endif %}
+      {% if stats.previous_season_tier %}
+      <span class="past-rank-inline">Last: {{ stats.previous_season_tier }}</span>
+      {% endif %}
+      {% if stats.season_games > 0 %}
+      <span class="wr-badge {{ 'good' if stats.season_winrate >= 52 else 'bad' if stats.season_winrate < 48 else '' }}">{{ stats.season_winrate }}% WR</span>
+      <span class="games-count">{{ stats.season_games }} games</span>
+      {% endif %}
+      {% endif %}
+      <span class="expand-arrow">&#9660;</span>
+    </div>
+
+    <div class="player-body">
+      {% if stats %}
+      {% if stats.previous_season_tier or stats.peak_tier %}
+      <div class="extra-ranks">
+        {% if stats.peak_tier %}
+        <span class="muted">Peak: <strong style="color: {{ stats.peak_tier|peak_color }}">{{ stats.peak_tier }}</strong></span>
+        {% endif %}
+        {% if stats.previous_season_tier %}
+        <span class="muted">Last Season: <strong>{{ stats.previous_season_tier }}</strong></span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if stats.season_history %}
+      <details class="season-history">
+        <summary class="muted">Season History</summary>
+        <div>
+          {% for s in stats.season_history %}
+          <div class="season-row">
+            <span class="season-name">{{ s.season }}</span>
+            <span>{{ s.end_rank or '—' }}</span>
+            {% if s.peak_rank %}<span class="muted">Peak: {{ s.peak_rank }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
+
+      <div class="player-tabs">
+        <button class="player-tab active" onclick="switchTab(this,'ranked')">Ranked</button>
+        <button class="player-tab" onclick="switchTab(this,'mastery')">Mastery</button>
+      </div>
+
+      <div class="player-tab-panel" data-tab="ranked">
+        {% if stats.champions %}
+        <div class="champ-list">
+          <div class="champ-list-header"><span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span></div>
+          {% for champ in stats.champions[:10] %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}" onerror="this.style.display='none'">
+              <span class="champ-name">{{ champ.champion_name }}</span>
+              {% if champ.role %}<span class="champ-role-tag">{{ champ.role }}</span>{% endif %}
+              {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
+              <span class="otp-badge">OTP</span>
+              {% elif loop.index == 1 and stats.champions|length >= 2 and champ.games >= 10 and champ.games >= stats.champions[1].games * 2 %}
+              <span class="main-badge">MAIN</span>
+              {% endif %}
+            </div>
+            <span class="champ-games">{{ champ.games }}g</span>
+            <div class="wr-bar-container">
+              <div class="wr-bar" style="width: {{ champ.winrate }}%"></div>
+              <span class="wr-text {{ 'good' if champ.winrate >= 55 else 'bad' if champ.winrate < 48 else '' }}">{{ champ.winrate }}%</span>
+            </div>
+            <span class="champ-kda">{{ champ.kda }} KDA</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No ranked data.</p>
+        {% endif %}
+      </div>
+
+      <div class="player-tab-panel" data-tab="mastery" style="display:none">
+        {% if stats.masteries %}
+        <div class="champ-list">
+          <div class="champ-list-header mastery-header"><span>Champion</span><span>Level</span><span>Points</span><span>Last Played</span></div>
+          {% for m in stats.masteries[:15] %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ m.champion_key|champion_icon }}" onerror="this.style.display='none'">
+              <span class="champ-name">{{ m.champion_name }}</span>
+            </div>
+            <span class="mastery-level">Lvl {{ m.level }}</span>
+            <span class="mastery-points">{{ "{:,}".format(m.points) }}</span>
+            <span class="mastery-date muted">{{ m.last_played[:10] if m.last_played else '—' }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No mastery data.</p>
+        {% endif %}
+      </div>
+
+      {% if stats.opgg_url %}
+      <div style="margin-top:8px"><a href="{{ stats.opgg_url }}" target="_blank" rel="noopener">op.gg profile</a></div>
+      {% endif %}
+      {% else %}
+      <p class="muted">No data.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+</div>
+
+<div class="footer">Generated by LOL IMs Info</div>
+
+<script>
+function toggle(el) {
+  const body = el.nextElementSibling;
+  const arrow = el.querySelector('.expand-arrow');
+  const open = body.style.display !== 'block';
+  body.style.display = open ? 'block' : 'none';
+  arrow.classList.toggle('open', open);
+}
+function switchTab(btn, tab) {
+  const body = btn.closest('.player-body');
+  body.querySelectorAll('.player-tab').forEach(t => t.classList.remove('active'));
+  body.querySelectorAll('.player-tab-panel').forEach(p => p.style.display = 'none');
+  btn.classList.add('active');
+  body.querySelector('[data-tab="'+tab+'"]').style.display = '';
+}
+</script>
+</body>
+</html>
