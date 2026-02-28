@@ -23,12 +23,8 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
     """
     Analyze opponent team and return scored ban recommendations.
 
-    Scoring factors:
-    - One-trick detection (40%+ games on one champ)
-    - High winrate comfort picks (58%+ WR, 15+ games)
-    - Multi-player overlap (same champ played by multiple players)
-    - High KDA comfort (4.0+ KDA, 15+ games)
-    All weighted by player rank.
+    Priority: high-ranked players' most played champions.
+    OTP status gives a slight bonus but rank matters more.
     """
     champ_scores = defaultdict(lambda: {
         "score": 0.0,
@@ -53,16 +49,13 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         tier_weight = TIER_WEIGHTS.get(tier, 1.0)
         pname = player["game_name"]
 
-        # Determine OTP/Main: based on gap between #1 and #2 champion games
-        # OTP: #1 has 20+ games, #2 has <=2 (extremely skewed)
-        # Main: #1 has 10+ games, #2 has <=2 (pretty skewed)
+        # Detect OTP/Main for labeling
         sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
         otp_name = None
         main_name = None
         if len(sorted_champs) >= 2:
             top_games = sorted_champs[0].get("games", 0)
             second_games = sorted_champs[1].get("games", 0)
-            # Ratio scales: 2.0 at 10 games → 1.5 at 50+ games
             ratio_needed = max(2.0 - (top_games - 10) * 0.0125, 1.5)
             if top_games >= 20 and second_games <= 2:
                 otp_name = sorted_champs[0]["champion_name"]
@@ -71,62 +64,40 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
             otp_name = sorted_champs[0]["champion_name"]
 
-        for champ in stats["champions"][:10]:
+        for i, champ in enumerate(stats["champions"][:10]):
             key = champ["champion_name"]
             games = champ.get("games", 0)
-            winrate = champ.get("winrate", 0)
-            kda = champ.get("kda", 0)
+            if games < 3:
+                continue
 
             entry = champ_scores[key]
             entry["champion_key"] = champ.get("champion_key", key)
             entry["champion_id"] = champ.get("champion_id")
 
-            # OTP / Main detection for ban scoring
+            # Core score: games played × rank weight
+            # Higher ranked players' champions score much more
+            score = games * tier_weight
+
+            # Position bonus: #1 most played gets extra weight
+            if i == 0:
+                score *= 1.5
+            elif i == 1:
+                score *= 1.2
+
+            reasons = []
+            reasons.append(f"{pname} ({tier.capitalize()}, {games}g)")
+
+            # Small OTP bonus (slight bump, not dominant)
             if key == otp_name:
-                second_g = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
-                score = 50 + (games - second_g) * 0.5
-                entry["score"] += score * tier_weight
-                entry["reasons"].append(
-                    f"One-trick: {pname} ({games}g, next most played {second_g}g, {winrate:.0f}% WR)"
-                )
+                score *= 1.15
+                reasons.append("OTP")
             elif key == main_name:
-                second_g = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
-                score = 30 + (games - second_g) * 0.3
-                entry["score"] += score * tier_weight
-                entry["reasons"].append(
-                    f"Main: {pname} ({games}g, next most played {second_g}g, {winrate:.0f}% WR)"
-                )
+                score *= 1.1
+                reasons.append("Main")
 
-            # High winrate comfort
-            if games >= 15 and winrate >= 58:
-                score = (winrate - 50) * 1.2
-                entry["score"] += score * tier_weight
-                entry["reasons"].append(
-                    f"High WR: {pname} ({winrate:.0f}% on {games}g)"
-                )
-
-            # High KDA comfort
-            if games >= 15 and kda >= 4.0:
-                entry["score"] += 10 * tier_weight
-                entry["reasons"].append(
-                    f"Strong KDA: {pname} ({kda:.1f} KDA on {games}g)"
-                )
-
-            # Games volume weight
-            if games >= 20:
-                entry["score"] += min(games / 20, 2.5) * 3 * tier_weight
-
+            entry["score"] += score
+            entry["reasons"].extend(reasons)
             entry["players"].append(pname)
-
-    # Multi-player overlap bonus
-    for key, data in champ_scores.items():
-        unique = list(set(data["players"]))
-        if len(unique) >= 2:
-            bonus = (len(unique) - 1) * 20
-            data["score"] += bonus
-            data["reasons"].append(
-                f"Multi-player: played by {', '.join(unique)}"
-            )
 
     results = []
     for name, data in champ_scores.items():
