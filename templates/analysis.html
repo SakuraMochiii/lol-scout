@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ my_team.name }} vs {{ opp_team.name }} — LOL IMs Info{% endblock %}
+{% block export_url %}/export/analysis/{{ opp_team.id }}{% endblock %}
 {% block content %}
 <div class="analysis-header">
   <h1>
@@ -7,7 +8,6 @@
     <span class="vs">vs</span>
     <a href="/team/{{ opp_team.id }}">{{ opp_team.name }}</a>
   </h1>
-  <a href="/export/analysis/{{ opp_team.id }}" class="btn btn-sm" style="margin-left:auto">Export</a>
 </div>
 
 {% if one_tricks %}
