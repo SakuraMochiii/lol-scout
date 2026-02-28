@@ -135,15 +135,12 @@ h2 { font-size: 16px; }
   letter-spacing: 0.05em;
   vertical-align: middle;
 }
-.team-players { margin-bottom: 12px; }
-.team-player-mini {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 3px 0;
-  font-size: 13px;
-}
-.player-name-mini { flex: 1; }
+.dashboard-roster { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+.dashboard-roster th { text-align: left; color: var(--text-muted); font-size: 10px; text-transform: uppercase; padding: 2px 4px; border-bottom: 1px solid var(--border); font-weight: 600; }
+.dashboard-roster td { padding: 3px 4px; }
+.dashboard-roster .player-name-mini { font-weight: 500; }
+.dashboard-colored { font-weight: 600; }
+.dashboard-plain { color: var(--text-muted); }
 .subs-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .team-actions { display: flex; gap: 8px; }
 
