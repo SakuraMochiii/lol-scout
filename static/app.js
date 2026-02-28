@@ -9,6 +9,14 @@ function togglePlayer(headerEl) {
   arrow.classList.toggle('open', !isOpen);
 }
 
+function switchPlayerTab(btn, tabName) {
+  const body = btn.closest('.player-body');
+  body.querySelectorAll('.player-tab').forEach(t => t.classList.remove('active'));
+  body.querySelectorAll('.player-tab-panel').forEach(p => p.style.display = 'none');
+  btn.classList.add('active');
+  body.querySelector('.player-tab-panel[data-tab="' + tabName + '"]').style.display = '';
+}
+
 async function refreshPlayer(playerId, btn) {
   if (btn) {
     btn.textContent = 'Refreshing...';

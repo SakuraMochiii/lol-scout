@@ -90,39 +90,73 @@
       {% endif %}
       {% endif %}
 
-      {% if stats and stats.champions %}
-      <div class="champ-list">
-        <div class="champ-list-header">
-          <span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span>
-        </div>
-        {% for champ in stats.champions[:10] %}
-        <div class="champ-row">
-          <div class="champ-info">
-            <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}"
-                 alt="{{ champ.champion_name }}"
-                 onerror="this.style.display='none'">
-            <span class="champ-name">{{ champ.champion_name }}</span>
-            {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
-            <span class="otp-badge">OTP</span>
-            {% elif loop.index == 1 and stats.champions|length >= 2 and champ.games >= 10 and champ.games >= stats.champions[1].games * 2 %}
-            <span class="main-badge">MAIN</span>
-            {% endif %}
-          </div>
-          <span class="champ-games">{{ champ.games }}g</span>
-          <div class="wr-bar-container">
-            <div class="wr-bar" style="width: {{ champ.winrate }}%"></div>
-            <span class="wr-text {{ 'good' if champ.winrate >= 55 else 'bad' if champ.winrate < 48 else '' }}">
-              {{ champ.winrate }}%
-            </span>
-          </div>
-          <span class="champ-kda">{{ champ.kda }} KDA</span>
-        </div>
-        {% endfor %}
+      {% if stats %}
+      <div class="player-tabs">
+        <button class="player-tab active" onclick="switchPlayerTab(this, 'ranked')">Ranked</button>
+        <button class="player-tab" onclick="switchPlayerTab(this, 'mastery')">Mastery</button>
       </div>
-      {% elif not stats %}
-      <p class="muted">No data yet. Click refresh to fetch from op.gg.</p>
+
+      <div class="player-tab-panel" data-tab="ranked">
+        {% if stats.champions %}
+        <div class="champ-list">
+          <div class="champ-list-header">
+            <span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span>
+          </div>
+          {% for champ in stats.champions[:10] %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}"
+                   alt="{{ champ.champion_name }}"
+                   onerror="this.style.display='none'">
+              <span class="champ-name">{{ champ.champion_name }}</span>
+              {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
+              <span class="otp-badge">OTP</span>
+              {% elif loop.index == 1 and stats.champions|length >= 2 and champ.games >= 10 and champ.games >= stats.champions[1].games * 2 %}
+              <span class="main-badge">MAIN</span>
+              {% endif %}
+            </div>
+            <span class="champ-games">{{ champ.games }}g</span>
+            <div class="wr-bar-container">
+              <div class="wr-bar" style="width: {{ champ.winrate }}%"></div>
+              <span class="wr-text {{ 'good' if champ.winrate >= 55 else 'bad' if champ.winrate < 48 else '' }}">
+                {{ champ.winrate }}%
+              </span>
+            </div>
+            <span class="champ-kda">{{ champ.kda }} KDA</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No ranked champion data available.</p>
+        {% endif %}
+      </div>
+
+      <div class="player-tab-panel" data-tab="mastery" style="display:none">
+        {% if stats.masteries %}
+        <div class="champ-list">
+          <div class="champ-list-header mastery-header">
+            <span>Champion</span><span>Level</span><span>Points</span><span>Last Played</span>
+          </div>
+          {% for m in stats.masteries[:15] %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ m.champion_key|champion_icon }}"
+                   alt="{{ m.champion_name }}"
+                   onerror="this.style.display='none'">
+              <span class="champ-name">{{ m.champion_name }}</span>
+            </div>
+            <span class="mastery-level">Lvl {{ m.level }}</span>
+            <span class="mastery-points">{{ "{:,}".format(m.points) }}</span>
+            <span class="mastery-date muted">{{ m.last_played[:10] if m.last_played else '—' }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No mastery data available. Refresh to fetch.</p>
+        {% endif %}
+      </div>
       {% else %}
-      <p class="muted">No champion data available.</p>
+      <p class="muted">No data yet. Click refresh to fetch from op.gg.</p>
       {% endif %}
 
       <div class="player-footer">

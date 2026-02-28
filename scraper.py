@@ -243,6 +243,54 @@ def scrape_season_history(game_name: str, tag_line: str) -> dict:
     return result
 
 
+def scrape_masteries(game_name: str, tag_line: str) -> list[dict]:
+    """Fetch champion mastery data from op.gg mastery page."""
+    slug = f"{game_name}-{tag_line}"
+    url = f"https://op.gg/lol/summoners/na/{quote(slug)}/mastery"
+    html = _fetch(url)
+
+    # Find the masteries array
+    idx = html.find('"masteries":[{')
+    if idx < 0:
+        idx = html.find('masteries\\":[{')
+    if idx < 0:
+        return []
+
+    arr_start = html.index("[", idx)
+    depth = 0
+    for i in range(arr_start, min(arr_start + 500000, len(html))):
+        if html[i] == "[":
+            depth += 1
+        elif html[i] == "]":
+            depth -= 1
+            if depth == 0:
+                arr_text = html[arr_start : i + 1].replace('\\"', '"')
+                try:
+                    raw = json.loads(arr_text)
+                except json.JSONDecodeError:
+                    return []
+
+                masteries = []
+                for m in raw:
+                    name = m.get("champion_name", "")
+                    key = ""
+                    img = m.get("champion_image_url", "")
+                    if img:
+                        key = img.split("/")[-1].replace(".png", "")
+
+                    masteries.append({
+                        "champion_id": m.get("champion_id"),
+                        "champion_name": name,
+                        "champion_key": key or name,
+                        "level": m.get("level", 0),
+                        "points": m.get("points", 0),
+                        "last_played": m.get("last_played_at", ""),
+                    })
+                return masteries
+
+    return []
+
+
 def scrape_champions(game_name: str, tag_line: str) -> dict:
     """
     Fetch champion stats from the op.gg champions page.
@@ -375,11 +423,12 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
         "season_losses": 0,
         "season_winrate": 0,
         "champions": [],
+        "masteries": [],
         "opgg_url": None,
         "scrape_error": None,
     }
 
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from concurrent.futures import ThreadPoolExecutor
 
     errors = []
     resolved_name = game_name
@@ -402,11 +451,11 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     slug = f"{resolved_name}-{resolved_tag}"
     stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
 
-    # Step 2: Fetch season history + champion stats in parallel
-    # (they hit different sites: leagueofgraphs vs op.gg)
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    # Step 2: Fetch history, champions, and masteries in parallel
+    with ThreadPoolExecutor(max_workers=3) as pool:
         history_future = pool.submit(scrape_season_history, resolved_name, resolved_tag)
         champs_future = pool.submit(scrape_champions, resolved_name, resolved_tag)
+        mastery_future = pool.submit(scrape_masteries, resolved_name, resolved_tag)
 
         try:
             history = history_future.result(timeout=30)
@@ -425,6 +474,11 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
             stats["champions"] = champ_data["champions"]
         except Exception as e:
             errors.append(f"Champions fetch failed: {e}")
+
+        try:
+            stats["masteries"] = mastery_future.result(timeout=30)
+        except Exception as e:
+            errors.append(f"Masteries failed: {e}")
 
     if errors:
         stats["scrape_error"] = "; ".join(errors)

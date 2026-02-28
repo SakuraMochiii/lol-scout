@@ -220,6 +220,21 @@ h2 { font-size: 16px; }
 .player-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 
 /* Champion list */
+/* Player tabs */
+.player-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.player-tab {
+  padding: 4px 14px; background: var(--bg-hover); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 12px;
+  font-weight: 600; font-family: inherit;
+}
+.player-tab.active { background: #0369a1; border-color: #0284c7; color: white; }
+
+.mastery-header { grid-template-columns: 1fr 50px 80px 90px; }
+[data-tab="mastery"] .champ-row { grid-template-columns: 1fr 50px 80px 90px; }
+.mastery-level { font-weight: 600; color: var(--gold); font-size: 12px; text-align: right; }
+.mastery-points { font-size: 12px; text-align: right; }
+.mastery-date { font-size: 11px; text-align: right; }
+
 .champ-list { font-size: 13px; }
 .champ-list-header {
   display: grid;
