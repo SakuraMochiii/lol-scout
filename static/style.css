@@ -117,7 +117,7 @@ h2 { font-size: 16px; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px;
+  padding: 12px 10px;
   transition: border-color 0.2s;
 }
 .team-card:hover { border-color: #4a5568; }
