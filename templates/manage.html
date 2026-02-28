@@ -71,7 +71,7 @@
                 {% endfor %}
               </select>
             </td>
-            <td>{{ player.game_name }}#{{ player.tag_line }}</td>
+            <td>{% if player.stats and player.stats.opgg_url %}<a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener">{{ player.game_name }}#{{ player.tag_line }}</a>{% else %}{{ player.game_name }}#{{ player.tag_line }}{% endif %}</td>
             <td>
               {% if player.stats %}
               <span style="color: {{ player.stats.tier|tier_color }}">{{ player|tier_display }}</span>
