@@ -31,8 +31,10 @@
         <button class="btn btn-sm" onclick="setMyTeam('{{ team.id }}')">Set as My Team</button>
         {% endif %}
         <span class="muted">{{ team.players|length }} player{{ 's' if team.players|length != 1 else '' }}</span>
+        <button class="btn btn-sm" onclick="refreshTeamManage('{{ team.id }}', this)">Refresh All</button>
         <button class="btn btn-sm btn-danger" onclick="deleteTeam('{{ team.id }}', '{{ team.name }}')">Delete</button>
       </div>
+      <div class="refresh-status manage-refresh" id="refresh-status-{{ team.id }}" style="display:none"></div>
 
       <div class="add-player-form">
         <input type="text" placeholder="Username#TAG or op.gg link"

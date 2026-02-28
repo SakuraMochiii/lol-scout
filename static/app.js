@@ -33,7 +33,17 @@ async function refreshPlayer(playerId, btn) {
 }
 
 async function refreshTeam(teamId) {
-  const status = document.getElementById('refresh-status');
+  _startRefresh(teamId, 'refresh-status', true);
+}
+
+async function refreshTeamManage(teamId, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Refreshing...';
+  _startRefresh(teamId, 'refresh-status-' + teamId, false);
+}
+
+async function _startRefresh(teamId, statusId, reloadOnDone) {
+  const status = document.getElementById(statusId);
   status.style.display = 'block';
   status.textContent = 'Starting refresh...';
 
@@ -47,15 +57,14 @@ async function refreshTeam(teamId) {
     if (data.status === 'already_running') {
       status.textContent = 'Refresh already in progress...';
     }
-    // Poll for progress
-    pollRefreshStatus(teamId);
+    pollRefreshStatus(teamId, statusId, reloadOnDone);
   } catch (e) {
     status.textContent = 'Network error: ' + e.message;
   }
 }
 
-async function pollRefreshStatus(teamId) {
-  const status = document.getElementById('refresh-status');
+async function pollRefreshStatus(teamId, statusId, reloadOnDone) {
+  const status = document.getElementById(statusId);
   try {
     const res = await fetch(`/api/teams/${teamId}/refresh/status`);
     const job = await res.json();
@@ -74,14 +83,12 @@ async function pollRefreshStatus(teamId) {
       } else {
         status.textContent = `All ${job.total} players refreshed.`;
       }
-      setTimeout(() => location.reload(), 1500);
+      if (reloadOnDone) setTimeout(() => location.reload(), 1500);
       return;
     }
-    // Poll again in 2 seconds
-    setTimeout(() => pollRefreshStatus(teamId), 2000);
+    setTimeout(() => pollRefreshStatus(teamId, statusId, reloadOnDone), 2000);
   } catch (e) {
-    // Network error during poll — retry
-    setTimeout(() => pollRefreshStatus(teamId), 3000);
+    setTimeout(() => pollRefreshStatus(teamId, statusId, reloadOnDone), 3000);
   }
 }
 
