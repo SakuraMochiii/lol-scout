@@ -84,23 +84,31 @@
               {% endif %}
             </td>
             <td>
+              {% if player.stats and player.stats.peak_tier %}
+              <span style="color: {{ player.stats.peak_tier|peak_color }}; font-weight:600;">{{ player.stats.peak_tier }}</span>
+              {% else %}
               <input type="text" class="input-mini" style="width:80px"
-                     value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
+                     value=""
                      placeholder="e.g. M 100LP"
                      onchange="updatePlayerExtra('{{ player.id }}', 'peak_tier', this.value)">
+              {% endif %}
             </td>
             <td>
-              {% if player.stats %}
-              <span style="color: {{ player.stats.tier|tier_color }}">{{ player|tier_display }}</span>
+              {% if player.stats and player.stats.tier != 'UNRANKED' %}
+              <span class="muted">{{ player|tier_display }}</span>
               {% else %}
               <span class="muted">—</span>
               {% endif %}
             </td>
             <td>
+              {% if player.stats and player.stats.previous_season_tier %}
+              <span class="muted">{{ player.stats.previous_season_tier }}</span>
+              {% else %}
               <input type="text" class="input-mini" style="width:80px"
-                     value="{{ player.stats.previous_season_tier or '' if player.stats else '' }}"
+                     value=""
                      placeholder="e.g. D2"
                      onchange="updatePlayerExtra('{{ player.id }}', 'previous_season_tier', this.value)">
+              {% endif %}
             </td>
             <td>
               {% if player.is_substitute %}
