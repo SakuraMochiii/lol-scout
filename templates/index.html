@@ -36,6 +36,9 @@
         {% else %}
         <span class="tier-badge unranked">Unranked</span>
         {% endif %}
+        {% if player.stats.peak_tier %}
+        <span class="peak-rank-inline">Peak: {{ player.stats.peak_tier }}</span>
+        {% endif %}
         {% else %}
         <span class="tier-badge unranked">No data</span>
         {% endif %}

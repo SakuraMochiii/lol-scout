@@ -43,6 +43,9 @@
       {% else %}
       <span class="tier-badge unranked">Unranked</span>
       {% endif %}
+      {% if stats.peak_tier %}
+      <span class="peak-rank-inline">Peak: {{ stats.peak_tier }}</span>
+      {% endif %}
       {% if stats.season_games > 0 %}
       <span class="wr-badge {{ 'good' if stats.season_winrate >= 52 else 'bad' if stats.season_winrate < 48 else '' }}">
         {{ stats.season_winrate }}% WR

@@ -170,6 +170,7 @@ h2 { font-size: 16px; }
 .tier-badge { font-size: 12px; font-weight: 600; white-space: nowrap; }
 .tier-badge.unranked { color: var(--text-muted); }
 .past-rank-inline { font-size: 11px; color: #a78bfa; font-style: italic; }
+.peak-rank-inline { font-size: 11px; color: var(--gold); font-style: italic; }
 
 /* Winrate */
 .wr-badge { font-size: 12px; font-weight: 600; }
