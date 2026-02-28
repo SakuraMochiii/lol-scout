@@ -39,7 +39,7 @@
       <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">Peak: {{ stats.peak_tier }}</span>
       {% endif %}
       {% if stats.tier != 'UNRANKED' %}
-      <span class="current-rank-inline">{{ player|tier_display }}</span>
+      <span class="current-rank-inline">Cur: {{ player|tier_display }}</span>
       {% else %}
       <span class="current-rank-inline unranked">Unranked</span>
       {% endif %}
@@ -192,7 +192,7 @@
       {% if stats.peak_tier %}
       <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">Peak: {{ stats.peak_tier }}</span>
       {% endif %}
-      <span class="current-rank-inline">{{ player|tier_display }}</span>
+      <span class="current-rank-inline">Cur: {{ player|tier_display }}</span>
       <span class="wr-badge">{{ stats.season_winrate }}% WR</span>
       {% endif %}
       <span class="expand-arrow">&#9660;</span>
