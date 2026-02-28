@@ -23,6 +23,7 @@ RETRY_DELAYS = [1, 2, 4]
 
 _ddragon_version_cache = {"version": None, "fetched_at": 0}
 _champion_roles_cache = {"data": None, "fetched_at": 0}
+_champion_keys_cache = {"data": None, "fetched_at": 0}
 
 
 class ScrapeError(Exception):
@@ -733,8 +734,37 @@ ROLE_SHORT = {
 }
 
 
+def _get_champion_key_map() -> dict:
+    """Build a mapping from lowercase keys to correct ddragon filenames (cached 24h)."""
+    now = time.time()
+    if _champion_keys_cache["data"] and now - _champion_keys_cache["fetched_at"] < 86400:
+        return _champion_keys_cache["data"]
+    try:
+        version = get_ddragon_version()
+        resp = requests.get(
+            f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json",
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()["data"]
+        mapping = {}
+        for key in data:
+            # key is the correct filename (e.g. "DrMundo", "AurelionSol", "LeeSin")
+            mapping[key.lower()] = key
+        _champion_keys_cache["data"] = mapping
+        _champion_keys_cache["fetched_at"] = now
+        return mapping
+    except Exception:
+        return _champion_keys_cache["data"] or {}
+
+
 def champion_icon_url(champion_key: str) -> str:
     """Get Data Dragon CDN URL for a champion icon."""
     version = get_ddragon_version()
-    key = champion_key[0].upper() + champion_key[1:] if champion_key else "Unknown"
-    return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{key}.png"
+    # Map lowercase op.gg key to correct ddragon filename
+    key_map = _get_champion_key_map()
+    correct_key = key_map.get(champion_key.lower(), "")
+    if not correct_key:
+        # Fallback: capitalize first letter
+        correct_key = champion_key[0].upper() + champion_key[1:] if champion_key else "Unknown"
+    return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{correct_key}.png"
