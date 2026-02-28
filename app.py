@@ -344,6 +344,15 @@ def tier_color_filter(tier):
     return colors.get(tier, "#6b7280")
 
 
+@app.template_filter("peak_color")
+def peak_color_filter(peak_str):
+    """Get tier color from a peak rank string like 'Platinum I'."""
+    if not peak_str:
+        return "#6b7280"
+    base = peak_str.split()[0].upper()
+    return tier_color_filter(base)
+
+
 @app.template_filter("tier_display")
 def tier_display_filter(player):
     stats = player.get("stats")

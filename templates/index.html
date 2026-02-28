@@ -27,15 +27,15 @@
         <span class="role-tag">{{ player.role[:3].upper() }}</span>
         <span class="player-name-mini">{{ player.game_name }}</span>
         {% if player.stats %}
+        {% if player.stats.peak_tier %}
+        <span class="peak-rank-inline" style="color: {{ player.stats.peak_tier|peak_color }}">Peak: {{ player.stats.peak_tier }}</span>
+        {% endif %}
         {% if player.stats.tier != 'UNRANKED' %}
         <span class="tier-badge" style="color: {{ player.stats.tier|tier_color }}">
           {{ player|tier_display }}
         </span>
         {% else %}
         <span class="tier-badge unranked">Unranked</span>
-        {% endif %}
-        {% if player.stats.peak_tier %}
-        <span class="peak-rank-inline">Peak: {{ player.stats.peak_tier }}</span>
         {% endif %}
         {% else %}
         <span class="tier-badge unranked">Unranked</span>
