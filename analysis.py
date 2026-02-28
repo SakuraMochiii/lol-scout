@@ -242,17 +242,18 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
 
             # Counter score: how well does this pick do vs opponent's main?
             if counter_data and name in counter_data:
-                # counter_data[name] = win rate for OPPONENT's main against us
-                # Low value = this pick counters the opponent
-                opp_wr = counter_data[name]
-                counter_advantage = 50 - opp_wr  # positive = we counter them
-                # Only count as a real counter/countered if gap is meaningful (>2%)
+                # counter_data[name] = opponent main's WR vs this pick
+                # e.g. Jayce counter page shows Sett at 46% → Jayce has 46% WR vs Sett
+                # So Sett has 54% WR vs Jayce → Sett counters Jayce
+                opp_main_wr = counter_data[name]
+                our_wr = 100 - opp_main_wr
+                counter_advantage = our_wr - 50  # positive = we counter them
                 if counter_advantage > 2:
                     score += counter_advantage * 3
-                    reasons.append(f"Counters {opp_main['name']} ({100 - opp_wr:.1f}% WR vs them)")
+                    reasons.append(f"Counters {opp_main['name']} ({our_wr:.0f}% WR into {opp_main['name']})")
                 elif counter_advantage < -2:
-                    score += counter_advantage * 2  # smaller penalty for being countered
-                    reasons.append(f"Weak into {opp_main['name']} ({100 - opp_wr:.1f}% WR vs them)")
+                    score += counter_advantage * 2
+                    reasons.append(f"Weak into {opp_main['name']} ({our_wr:.0f}% WR into {opp_main['name']})")
 
             # Mastery/comfort score
             # Weight mastery higher vs lower-ranked opponents (comfort pick matters more)
@@ -288,7 +289,7 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
                 "likely_banned": banned,
                 "player": player["game_name"],
                 "reasons": reasons,
-                "counters": opp_main["name"] if opp_main and name in counter_data and counter_data[name] < 50 else "",
+                "counters": opp_main["name"] if opp_main and name in counter_data and counter_data[name] < 48 else "",
             })
 
         picks.sort(key=lambda x: -x["score"])
