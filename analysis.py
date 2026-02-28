@@ -36,21 +36,24 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
 
     for player in opponent_team.get("players", []):
         stats = player.get("stats")
-        if not stats or not stats.get("champions"):
-            continue
-
-        total_games = stats.get("season_games") or sum(
-            c["games"] for c in stats["champions"]
-        )
-        if total_games == 0:
+        if not stats:
             continue
 
         tier = stats.get("tier", "UNRANKED")
         tier_weight = TIER_WEIGHTS.get(tier, 1.0)
         pname = player["game_name"]
 
+        # Build mastery lookup: champion_name → {level, points}
+        mastery_map = {}
+        for m in stats.get("masteries", []):
+            mastery_map[m["champion_name"]] = {
+                "level": m.get("level", 0),
+                "points": m.get("points", 0),
+                "champion_key": m.get("champion_key", ""),
+            }
+
         # Detect OTP/Main for labeling
-        sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
+        sorted_champs = sorted(stats.get("champions", []), key=lambda c: -c.get("games", 0))
         otp_name = None
         main_name = None
         if len(sorted_champs) >= 2:
@@ -64,39 +67,55 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
             otp_name = sorted_champs[0]["champion_name"]
 
-        for i, champ in enumerate(stats["champions"][:10]):
+        # Score by mastery (primary) — high mastery on high-ranked players
+        scored_champs = set()
+        for m_name, m_data in mastery_map.items():
+            level = m_data["level"]
+            points = m_data["points"]
+            if points < 10000:
+                continue  # skip low mastery
+
+            entry = champ_scores[m_name]
+            if not entry["champion_key"] and m_data["champion_key"]:
+                entry["champion_key"] = m_data["champion_key"]
+
+            # Mastery score: log-scaled points × rank weight
+            # 100k points ≈ 50, 500k ≈ 57, 1M ≈ 60 (diminishing returns)
+            import math
+            mastery_score = math.log10(max(points, 1)) * 10 * tier_weight
+
+            reasons = []
+            reasons.append(f"{pname} ({tier.capitalize()}, Lvl {level}, {points:,} pts)")
+
+            # Small OTP bonus
+            if m_name == otp_name:
+                mastery_score *= 1.15
+                reasons.append("OTP")
+            elif m_name == main_name:
+                mastery_score *= 1.1
+                reasons.append("Main")
+
+            entry["score"] += mastery_score
+            entry["reasons"].extend(reasons)
+            entry["players"].append(pname)
+            scored_champs.add(m_name)
+
+        # Also include ranked champions not in mastery (fallback)
+        for champ in stats.get("champions", [])[:5]:
             key = champ["champion_name"]
+            if key in scored_champs:
+                continue
             games = champ.get("games", 0)
-            if games < 3:
+            if games < 5:
                 continue
 
             entry = champ_scores[key]
             entry["champion_key"] = champ.get("champion_key", key)
             entry["champion_id"] = champ.get("champion_id")
 
-            # Core score: games played × rank weight
-            # Higher ranked players' champions score much more
-            score = games * tier_weight
-
-            # Position bonus: #1 most played gets extra weight
-            if i == 0:
-                score *= 1.5
-            elif i == 1:
-                score *= 1.2
-
-            reasons = []
-            reasons.append(f"{pname} ({tier.capitalize()}, {games}g)")
-
-            # Small OTP bonus (slight bump, not dominant)
-            if key == otp_name:
-                score *= 1.15
-                reasons.append("OTP")
-            elif key == main_name:
-                score *= 1.1
-                reasons.append("Main")
-
+            score = games * tier_weight * 0.5  # lower weight than mastery
             entry["score"] += score
-            entry["reasons"].extend(reasons)
+            entry["reasons"].append(f"{pname} ({tier.capitalize()}, {games}g ranked)")
             entry["players"].append(pname)
 
     results = []
