@@ -1,5 +1,6 @@
 """Ban and pick recommendation engine."""
 
+import math
 from collections import defaultdict
 
 TIER_WEIGHTS = {
@@ -18,6 +19,25 @@ TIER_WEIGHTS = {
 
 ROLES = ["top", "jungle", "mid", "bot", "support"]
 
+ROLE_ALIASES = {
+    "top": {"top", "Top"},
+    "jungle": {"jgl", "Jgl", "jungle", "Jungle"},
+    "mid": {"mid", "Mid", "middle", "Middle"},
+    "bot": {"bot", "Bot", "adc", "ADC", "bottom", "Bottom"},
+    "support": {"sup", "Sup", "support", "Support"},
+}
+
+
+def champ_matches_role(champ_role_str, player_role):
+    """Check if a champion's role matches the player's assigned role."""
+    if not champ_role_str or not player_role or player_role == "fill":
+        return True
+    aliases = ROLE_ALIASES.get(player_role, {player_role})
+    for part in champ_role_str.split("/"):
+        if part.strip() in aliases:
+            return True
+    return False
+
 
 def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict]:
     """
@@ -27,8 +47,6 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
     Ranked games are the primary signal, mastery is a bonus but only
     for champions matching the player's assigned tournament role.
     """
-    import math
-
     champ_scores = defaultdict(lambda: {
         "score": 0.0,
         "reasons": [],
@@ -36,25 +54,6 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         "champion_key": "",
         "champion_id": None,
     })
-
-    # Role name normalization for matching
-    role_aliases = {
-        "top": {"top", "Top"},
-        "jungle": {"jgl", "Jgl", "jungle", "Jungle"},
-        "mid": {"mid", "Mid", "middle", "Middle"},
-        "bot": {"bot", "Bot", "adc", "ADC", "bottom", "Bottom"},
-        "support": {"sup", "Sup", "support", "Support"},
-    }
-
-    def champ_matches_role(champ_role_str, player_role):
-        """Check if a champion's role matches the player's assigned role."""
-        if not champ_role_str or not player_role or player_role == "fill":
-            return True  # no role info or fill = always matches
-        aliases = role_aliases.get(player_role, {player_role})
-        for part in champ_role_str.split("/"):
-            if part.strip() in aliases:
-                return True
-        return False
 
     for player in opponent_team.get("players", []):
         stats = player.get("stats")
@@ -155,7 +154,6 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
     - Bot lane: considers synergy between bot and support picks
     Filters out likely bans.
     """
-    import math
     from scraper import scrape_counters
 
     ban_recs = get_ban_recommendations(opponent_team, 5)
