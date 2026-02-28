@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ my_team.name }} vs {{ opp_team.name }} — LOL IMs Info</title>
+<style>
+:root {
+  --bg: #0a0e14; --bg-card: #111827; --bg-hover: #1e293b; --border: #2d3748;
+  --text: #e2e8f0; --text-muted: #718096; --gold: #c8aa6e; --accent: #0ea5e9;
+  --red: #ef4444; --green: #22c55e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+a { color: var(--accent); text-decoration: none; }
+.header { text-align: center; padding: 32px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.header h1 { font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.header .sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+.vs { color: var(--text-muted); font-size: 14px; font-weight: 400; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.card-title { color: var(--gold); margin-bottom: 12px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; }
+.muted { color: var(--text-muted); font-size: 13px; }
+.good { color: var(--green); }
+.bad { color: var(--red); }
+.champ-icon { width: 28px; height: 28px; border-radius: 4px; }
+.otp-badge { font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: #7f1d1d; color: #fca5a5; }
+.otp-list { display: flex; flex-direction: column; gap: 8px; }
+.otp-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1a0f0f; border: 1px solid #7f1d1d; border-radius: 6px; font-size: 13px; }
+.ban-list { display: flex; flex-direction: column; gap: 4px; }
+.ban-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 6px; background: var(--bg-hover); }
+.ban-item.priority { background: #1a0f0f; border-left: 3px solid var(--red); }
+.ban-rank { font-weight: 700; color: var(--text-muted); width: 24px; text-align: center; font-size: 14px; }
+.ban-item.priority .ban-rank { color: var(--red); }
+.ban-info { flex: 1; }
+.ban-champ { font-weight: 600; font-size: 14px; }
+.ban-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.reason-tag { font-size: 11px; background: #1e293b; padding: 2px 8px; border-radius: 10px; color: var(--text-muted); }
+.ban-score-container { width: 100px; position: relative; height: 24px; background: #1a1a2e; border-radius: 4px; overflow: hidden; }
+.ban-score-bar { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #991b1b, #ef4444); border-radius: 4px; }
+.ban-score { position: relative; z-index: 1; font-size: 12px; font-weight: 700; line-height: 24px; padding-left: 6px; }
+.pick-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.pick-tab { padding: 6px 16px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+.pick-tab.active { background: #0369a1; border-color: #0284c7; color: white; }
+.pick-panel.hidden { display: none; }
+.pick-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; background: var(--bg-hover); margin-bottom: 4px; }
+.pick-item.banned { opacity: 0.5; }
+.pick-info { flex: 1; }
+.pick-champ { font-weight: 600; font-size: 14px; }
+.pick-player { font-size: 12px; color: var(--text-muted); }
+.pick-wr { font-weight: 600; font-size: 13px; }
+.pick-games { font-size: 12px; color: var(--text-muted); }
+.pick-kda { font-size: 12px; color: var(--text-muted); }
+.likely-ban-tag { font-size: 10px; padding: 2px 6px; background: #7f1d1d; color: #fca5a5; border-radius: 4px; font-weight: 600; }
+.footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>{{ my_team.name }} <span class="vs">vs</span> {{ opp_team.name }}</h1>
+  <div class="sub">LOL IMs Info &mdash; Pick/Ban Analysis &mdash; {{ now }}</div>
+</div>
+<div class="container">
+
+{% if one_tricks %}
+<div class="card">
+  <h2 class="card-title">Key Champions</h2>
+  <div class="otp-list">
+    {% for otp in one_tricks %}
+    <div class="otp-item">
+      <img class="champ-icon" src="{{ otp.champion_key|champion_icon }}" onerror="this.style.display='none'">
+      <span class="otp-badge">{{ otp.tag|default('OTP') }}</span>
+      <div>
+        <strong>{{ otp.player }}</strong> ({{ otp.role }})
+        — {{ otp.champion }} {{ otp.pct }}% of games ({{ otp.games }}g, {{ otp.winrate }}% WR)
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2 class="card-title">Ban Recommendations</h2>
+  <p class="muted" style="margin-bottom: 12px">Bans scored by one-trick status, winrate, rank, and multi-player overlap.</p>
+  {% if ban_recs %}
+  <div class="ban-list">
+    {% for ban in ban_recs[:10] %}
+    <div class="ban-item {{ 'priority' if loop.index <= 5 else '' }}">
+      <span class="ban-rank">#{{ loop.index }}</span>
+      <img class="champ-icon" src="{{ ban.champion_key|champion_icon }}" onerror="this.style.display='none'">
+      <div class="ban-info">
+        <div class="ban-champ">{{ ban.champion_name }}</div>
+        <div class="ban-reasons">
+          {% for reason in ban.reasons %}
+          <span class="reason-tag">{{ reason }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="ban-score-container">
+        <div class="ban-score-bar" style="width: {{ [ban.score / (ban_recs[0].score if ban_recs[0].score else 1) * 100, 100]|min }}%"></div>
+        <span class="ban-score">{{ ban.score }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No data available for ban analysis.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2 class="card-title">Pick Recommendations ({{ my_team.name }})</h2>
+  <p class="muted" style="margin-bottom: 12px">Best picks from your team's champion pools, scored by winrate, experience, and KDA.</p>
+  {% if pick_recs %}
+  <div class="pick-tabs">
+    {% for role in ["top", "jungle", "mid", "bot", "support"] %}
+    {% if role in pick_recs %}
+    <button class="pick-tab {{ 'active' if loop.first else '' }}" onclick="showPickTab('{{ role }}', this)">{{ role|upper }}</button>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% for role, picks in pick_recs.items() %}
+  <div class="pick-panel {{ '' if loop.first else 'hidden' }}" data-role="{{ role }}">
+    {% for pick in picks %}
+    <div class="pick-item {{ 'banned' if pick.likely_banned else '' }}">
+      <img class="champ-icon" src="{{ pick.champion_key|champion_icon }}" onerror="this.style.display='none'">
+      <div class="pick-info">
+        <span class="pick-champ">{{ pick.champion_name }}</span>
+        <span class="pick-player muted">{{ pick.player }}</span>
+      </div>
+      <span class="pick-wr {{ 'good' if pick.winrate >= 55 else 'bad' if pick.winrate < 48 else '' }}">{{ pick.winrate }}% WR</span>
+      <span class="pick-games">{{ pick.games }}g</span>
+      <span class="pick-kda">{{ pick.kda }} KDA</span>
+      {% if pick.likely_banned %}
+      <span class="likely-ban-tag">Likely Banned</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% if not picks %}
+    <p class="muted">No champion data for this role.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="muted">No data available.</p>
+  {% endif %}
+</div>
+
+</div>
+<div class="footer">Generated by LOL IMs Info</div>
+<script>
+function showPickTab(role, btn) {
+  document.querySelectorAll('.pick-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pick-panel').forEach(p => p.classList.add('hidden'));
+  btn.classList.add('active');
+  document.querySelector('.pick-panel[data-role="'+role+'"]').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

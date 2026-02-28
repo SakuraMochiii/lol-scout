@@ -88,6 +88,39 @@ def export_page():
     }
 
 
+@app.route("/export/analysis/<opp_id>")
+def export_analysis(opp_id):
+    from datetime import datetime, timezone
+    data = storage.load()
+    my_team_id = data["meta"]["my_team_id"]
+    if not my_team_id:
+        return redirect(url_for("index"))
+    my_team = storage.get_team(data, my_team_id)
+    opp_team = storage.get_team(data, opp_id)
+    if not my_team or not opp_team:
+        return redirect(url_for("index"))
+
+    ban_recs = analysis.get_ban_recommendations(opp_team)
+    pick_recs = analysis.get_pick_recommendations(my_team, opp_team)
+    one_tricks = analysis.identify_one_tricks(opp_team)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    html = render_template(
+        "export_analysis.html",
+        my_team=my_team,
+        opp_team=opp_team,
+        ban_recs=ban_recs,
+        pick_recs=pick_recs,
+        one_tricks=one_tricks,
+        now=now,
+    )
+    filename = f"analysis_{my_team['name']}_vs_{opp_team['name']}.html".replace(" ", "_")
+    return html, 200, {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": "text/html; charset=utf-8",
+    }
+
+
 # --- API routes ---
 
 
