@@ -272,27 +272,42 @@ def _refresh_one_player(player):
 
 def _refresh_team_worker(team_id, players):
     """Background worker that refreshes all players on a team in parallel."""
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
 
     job = _refresh_jobs[team_id]
-    # Run up to 3 players at once (balances speed vs rate limiting)
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        futures = {
-            pool.submit(_refresh_one_player, p): p for p in players
-        }
-        for future in as_completed(futures):
-            player, stats, error = future.result()
-            if stats:
-                data = storage.load()
-                storage.update_player(data, player["id"], stats=stats)
-                job["results"].append({"player": player["game_name"], "success": True})
-            else:
-                job["results"].append({"player": player["game_name"], "success": False, "error": error})
-            job["done"] += 1
-            job["current"] = player["game_name"]
-
-    job["status"] = "complete"
-    job["current"] = None
+    try:
+        # Run up to 3 players at once
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            futures = {
+                pool.submit(_refresh_one_player, p): p for p in players
+            }
+            for future in as_completed(futures, timeout=300):  # 5 min max total
+                try:
+                    player, stats, error = future.result(timeout=90)  # 90s per player
+                    if stats:
+                        data = storage.load()
+                        storage.update_player(data, player["id"], stats=stats)
+                        job["results"].append({"player": player["game_name"], "success": True})
+                    else:
+                        job["results"].append({"player": player["game_name"], "success": False, "error": error or "Unknown"})
+                except TimeoutError:
+                    p = futures.get(future, {})
+                    name = p.get("game_name", "?") if isinstance(p, dict) else "?"
+                    job["results"].append({"player": name, "success": False, "error": "Timed out"})
+                except Exception as e:
+                    job["results"].append({"player": "?", "success": False, "error": str(e)})
+                job["done"] += 1
+    except TimeoutError:
+        # Overall timeout — mark remaining as failed
+        remaining = job["total"] - job["done"]
+        if remaining > 0:
+            job["results"].append({"player": f"{remaining} players", "success": False, "error": "Overall timeout"})
+            job["done"] = job["total"]
+    except Exception as e:
+        job["results"].append({"player": "worker", "success": False, "error": str(e)})
+    finally:
+        job["status"] = "complete"
+        job["current"] = None
 
 
 @app.route("/api/teams/<team_id>/refresh", methods=["POST"])

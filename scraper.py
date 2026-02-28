@@ -306,7 +306,7 @@ def scrape_champion_roles_ugg(game_name: str, tag_line: str) -> dict:
     champ_role_counts = defaultdict(Counter)
 
     page = 1
-    while page <= 10:  # cap at 10 pages
+    while page <= 5:  # cap at 5 pages (100 games) to avoid long fetches
         query = {
             "query": f'''query {{ fetchPlayerMatchSummaries(
                 regionId: "na1",
