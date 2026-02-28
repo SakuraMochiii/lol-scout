@@ -60,7 +60,7 @@
       <div class="alert alert-warn">{{ stats.scrape_error }}</div>
       {% endif %}
 
-      {% if stats and (stats.previous_season_tier or stats.peak_tier) %}
+      {% if stats and (stats.previous_season_tier or stats.peak_tier or stats.season_history) %}
       <div class="extra-ranks">
         {% if stats.previous_season_tier %}
         <span class="muted">Last Season: <strong>{{ stats.previous_season_tier }}</strong></span>
@@ -69,6 +69,22 @@
         <span class="muted">Peak: <strong>{{ stats.peak_tier }}</strong></span>
         {% endif %}
       </div>
+      {% if stats.season_history %}
+      <details class="season-history">
+        <summary class="muted">Season History</summary>
+        <div class="season-history-list">
+          {% for s in stats.season_history %}
+          <div class="season-row">
+            <span class="season-name">{{ s.season }}</span>
+            <span>{{ s.end_rank or '—' }}{% if s.end_lp %} ({{ s.end_lp }} LP){% endif %}</span>
+            {% if s.peak_rank %}
+            <span class="muted">Peak: {{ s.peak_rank }}{% if s.peak_lp %} ({{ s.peak_lp }} LP){% endif %}</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
       {% endif %}
 
       {% if stats and stats.champions %}

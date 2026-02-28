@@ -163,6 +163,99 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
     return result
 
 
+def scrape_season_history(game_name: str, tag_line: str) -> dict:
+    """
+    Fetch past season rank data from the op.gg profile page.
+    Returns previous season rank, peak rank, and full season history.
+    """
+    slug = f"{game_name}-{tag_line}"
+    url = f"https://op.gg/lol/summoners/na/{quote(slug)}"
+    html = _fetch(url)
+
+    result = {
+        "previous_season_tier": None,
+        "peak_tier": None,
+        "season_history": [],
+    }
+
+    text = html.replace('\\"', '"').replace("\\\\/", "/")
+
+    # Find the season history data array
+    idx = text.find('"data":[{"season":"S2')
+    if idx < 0:
+        return result
+
+    # Extract the array
+    arr_start = text.index("[", idx)
+    depth = 0
+    arr_end = arr_start
+    for i in range(arr_start, min(arr_start + 10000, len(text))):
+        if text[i] == "[":
+            depth += 1
+        elif text[i] == "]":
+            depth -= 1
+            if depth == 0:
+                arr_end = i + 1
+                break
+
+    try:
+        seasons = json.loads(text[arr_start:arr_end])
+    except json.JSONDecodeError:
+        return result
+
+    # Build season history
+    best_tier = None
+    best_tier_order = 999
+    tier_order = {
+        "challenger": 0, "grandmaster": 1, "master": 2, "diamond": 3,
+        "emerald": 4, "platinum": 5, "gold": 6, "silver": 7, "bronze": 8, "iron": 9,
+    }
+
+    for s in seasons:
+        season_name = s.get("season", "").strip()
+        rank_entries = s.get("rank_entries", {})
+        rank_info = rank_entries.get("rank_info", {})
+        high_info = rank_entries.get("high_rank_info", {})
+
+        end_tier = rank_info.get("tier", "").strip()
+        end_lp = rank_info.get("lp")
+        peak_tier = high_info.get("tier", "").strip()
+        peak_lp = high_info.get("lp")
+
+        entry = {
+            "season": season_name,
+            "end_rank": end_tier.title() if end_tier else None,
+            "end_lp": end_lp,
+            "peak_rank": peak_tier.title() if peak_tier else None,
+            "peak_lp": peak_lp,
+        }
+        result["season_history"].append(entry)
+
+        # Track all-time peak
+        for tier_str in [peak_tier, end_tier]:
+            if not tier_str:
+                continue
+            base = tier_str.split()[0].lower() if tier_str else ""
+            order = tier_order.get(base, 999)
+            if order < best_tier_order:
+                best_tier_order = order
+                best_tier = tier_str.title()
+
+    # Previous season = first entry (most recent past season)
+    if result["season_history"]:
+        first = result["season_history"][0]
+        if first["end_rank"]:
+            result["previous_season_tier"] = first["end_rank"]
+            if first["end_lp"]:
+                result["previous_season_tier"] += f" ({first['end_lp']} LP)"
+
+    # All-time peak
+    if best_tier:
+        result["peak_tier"] = best_tier
+
+    return result
+
+
 def scrape_champions(game_name: str, tag_line: str) -> dict:
     """
     Fetch champion stats from the op.gg champions page.
@@ -319,6 +412,16 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     # Build the op.gg URL using resolved name/tag
     slug = f"{resolved_name}-{resolved_tag}"
     stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
+
+    # Fetch season history (previous ranks, peak) from profile page
+    time.sleep(2)
+    try:
+        history = scrape_season_history(resolved_name, resolved_tag)
+        stats["previous_season_tier"] = history.get("previous_season_tier")
+        stats["peak_tier"] = history.get("peak_tier")
+        stats["season_history"] = history.get("season_history", [])
+    except ScrapeError as e:
+        errors.append(f"Season history failed: {e}")
 
     # Fetch champion stats using the resolved name/tag
     time.sleep(2)
