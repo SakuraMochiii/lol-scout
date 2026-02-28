@@ -1,5 +1,15 @@
 /* LoL Scout — client-side interactions */
 
+let editMode = false;
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-toggle');
+  btn.textContent = editMode ? 'View Mode' : 'Edit Mode';
+  btn.classList.toggle('btn-accent', editMode);
+  document.querySelectorAll('.edit-only').forEach(el => el.style.display = editMode ? '' : 'none');
+  document.querySelectorAll('.view-only').forEach(el => el.style.display = editMode ? 'none' : '');
+}
+
 function togglePlayer(headerEl) {
   const card = headerEl.closest('.player-card');
   const body = card.querySelector('.player-body');

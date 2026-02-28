@@ -13,34 +13,43 @@
 </div>
 
 <div class="card">
-  <h2 class="card-title">Teams</h2>
-  <div class="form-row">
-    <input type="text" id="new-team-name" placeholder="Team name" class="input">
-    <button class="btn" onclick="addTeam()">Add Team</button>
+  <div class="form-row" style="margin-bottom:12px">
+    <h2 class="card-title" style="margin-bottom:0">Teams</h2>
+    <button class="btn btn-sm" id="edit-toggle" onclick="toggleEditMode()" style="margin-left:auto">Edit Mode</button>
     <button class="btn btn-accent" onclick="refreshAllTeams()">Refresh All Teams</button>
   </div>
   <div class="refresh-status" id="refresh-all-status" style="display:none"></div>
+
+  <!-- Add team (always visible) -->
+  <div class="form-row edit-only" style="display:none;margin-bottom:12px">
+    <input type="text" id="new-team-name" placeholder="Team name" class="input">
+    <button class="btn" onclick="addTeam()">Add Team</button>
+  </div>
 
   <div class="manage-teams">
     {% for team in data.teams %}
     <div class="manage-team-row" data-team="{{ team.id }}">
       <div class="manage-team-header">
-        <input type="text" class="input team-name-input" value="{{ team.name }}"
-               data-team="{{ team.id }}" onchange="renameTeam('{{ team.id }}', this.value)">
+        <!-- View mode: plain text -->
+        <strong class="view-only">{{ team.name }}</strong>
+        <!-- Edit mode: editable input -->
+        <input type="text" class="input team-name-input edit-only" value="{{ team.name }}"
+               style="display:none" data-team="{{ team.id }}" onchange="renameTeam('{{ team.id }}', this.value)">
         {% if data.meta.my_team_id == team.id %}
         <span class="my-team-badge">MY TEAM</span>
         {% else %}
-        <button class="btn btn-sm" onclick="setMyTeam('{{ team.id }}')">Set as My Team</button>
+        <button class="btn btn-sm edit-only" style="display:none" onclick="setMyTeam('{{ team.id }}')">Set as My Team</button>
         {% endif %}
         <span class="muted">{{ team.players|length }} player{{ 's' if team.players|length != 1 else '' }}</span>
-        <button class="btn btn-sm reorder-btn" onclick="moveTeam('{{ team.id }}', -1)" title="Move up">&#9650;</button>
-        <button class="btn btn-sm reorder-btn" onclick="moveTeam('{{ team.id }}', 1)" title="Move down">&#9660;</button>
+        <button class="btn btn-sm reorder-btn edit-only" style="display:none" onclick="moveTeam('{{ team.id }}', -1)" title="Move up">&#9650;</button>
+        <button class="btn btn-sm reorder-btn edit-only" style="display:none" onclick="moveTeam('{{ team.id }}', 1)" title="Move down">&#9660;</button>
         <button class="btn btn-sm" onclick="refreshTeamManage('{{ team.id }}', this)">Refresh All</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteTeam('{{ team.id }}', '{{ team.name }}')">Delete</button>
+        <button class="btn btn-sm btn-danger edit-only" style="display:none" onclick="deleteTeam('{{ team.id }}', '{{ team.name }}')">Delete</button>
       </div>
       <div class="refresh-status manage-refresh" id="refresh-status-{{ team.id }}" style="display:none"></div>
 
-      <div class="add-player-form">
+      <!-- Add player form (edit only) -->
+      <div class="add-player-form edit-only" style="display:none">
         <input type="text" placeholder="Username#TAG or op.gg link"
                class="input player-input" data-team="{{ team.id }}">
         <select class="input role-select" data-team="{{ team.id }}">
@@ -63,40 +72,60 @@
       {% if team.players %}
       <table class="manage-player-table">
         <thead>
-          <tr><th>Role</th><th>Player</th><th>Peak</th><th>Rank</th><th>Last Season</th><th>Status</th><th></th></tr>
+          <tr>
+            <th>Role</th>
+            <th>Player</th>
+            <th>Peak</th>
+            <th>Rank</th>
+            <th>Last Season</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
         </thead>
         <tbody>
           {% for player in team.players %}
           <tr>
             <td>
-              <select class="input-mini" onchange="updatePlayerRole('{{ player.id }}', this.value)">
+              <!-- View: plain role -->
+              <span class="role-tag view-only">{{ player.role[:3].upper() }}</span>
+              <!-- Edit: dropdown -->
+              <select class="input-mini edit-only" style="display:none" onchange="updatePlayerRole('{{ player.id }}', this.value)">
                 {% for r in ["top","jungle","mid","bot","support","fill"] %}
                 <option value="{{ r }}" {{ 'selected' if player.role == r else '' }}>{{ r|upper }}</option>
                 {% endfor %}
               </select>
             </td>
             <td class="player-name-cell">
-              <input type="text" class="input-mini player-name-edit" style="width:120px"
+              <!-- View: link -->
+              <span class="view-only">
+                {% if player.stats and player.stats.opgg_url %}
+                <a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener">{{ player.game_name }}#{{ player.tag_line }}</a>
+                {% else %}
+                {{ player.game_name }}#{{ player.tag_line }}
+                {% endif %}
+              </span>
+              <!-- Edit: input -->
+              <input type="text" class="input-mini player-name-edit edit-only" style="display:none;width:120px"
                      value="{{ player.game_name }}#{{ player.tag_line }}"
                      onchange="updatePlayerName('{{ player.id }}', this.value)">
-              {% if player.stats and player.stats.opgg_url %}
-              <a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener" class="opgg-link-mini">&#8599;</a>
-              {% endif %}
             </td>
             <td>
               {% if player.stats and player.stats.peak_tier %}
+              <!-- View -->
               {% set cur_higher = player|current_higher_than_peak %}
-              {% if cur_higher %}
-              <span class="muted">{{ player.stats.peak_tier }}</span>
-              {% else %}
-              <span style="color: {{ player.stats.peak_tier|peak_color }}; font-weight:600;">{{ player.stats.peak_tier }}</span>
+              <span class="view-only">
+                {% if cur_higher %}
+                <span class="muted">{{ player.stats.peak_tier }}</span>
+                {% else %}
+                <span style="color: {{ player.stats.peak_tier|peak_color }}; font-weight:600;">{{ player.stats.peak_tier }}</span>
+                {% endif %}
+              </span>
               {% endif %}
-              {% else %}
-              <input type="text" class="input-mini" style="width:80px"
-                     value=""
+              <!-- Edit -->
+              <input type="text" class="input-mini edit-only" style="display:none;width:80px"
+                     value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
                      placeholder="e.g. M 100LP"
                      onchange="updatePlayerExtra('{{ player.id }}', 'peak_tier', this.value)">
-              {% endif %}
             </td>
             <td>
               {% if player.stats and player.stats.tier != 'UNRANKED' %}
@@ -111,13 +140,14 @@
             </td>
             <td>
               {% if player.stats and player.stats.previous_season_tier %}
-              <span class="muted">{{ player.stats.previous_season_tier }}</span>
-              {% else %}
-              <input type="text" class="input-mini" style="width:80px"
-                     value=""
+              <!-- View -->
+              <span class="muted view-only">{{ player.stats.previous_season_tier }}</span>
+              {% endif %}
+              <!-- Edit -->
+              <input type="text" class="input-mini edit-only" style="display:none;width:80px"
+                     value="{{ player.stats.previous_season_tier or '' if player.stats else '' }}"
                      placeholder="e.g. D2"
                      onchange="updatePlayerExtra('{{ player.id }}', 'previous_season_tier', this.value)">
-              {% endif %}
             </td>
             <td>
               {% if player.is_substitute %}
@@ -128,7 +158,7 @@
             </td>
             <td class="actions-cell">
               <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
-              <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+              <button class="btn btn-sm btn-danger edit-only" style="display:none" onclick="deletePlayer('{{ player.id }}')">Remove</button>
             </td>
           </tr>
           {% endfor %}
