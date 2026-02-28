@@ -33,6 +33,8 @@
         <button class="btn btn-sm" onclick="setMyTeam('{{ team.id }}')">Set as My Team</button>
         {% endif %}
         <span class="muted">{{ team.players|length }} player{{ 's' if team.players|length != 1 else '' }}</span>
+        <button class="btn btn-sm reorder-btn" onclick="moveTeam('{{ team.id }}', -1)" title="Move up">&#9650;</button>
+        <button class="btn btn-sm reorder-btn" onclick="moveTeam('{{ team.id }}', 1)" title="Move down">&#9660;</button>
         <button class="btn btn-sm" onclick="refreshTeamManage('{{ team.id }}', this)">Refresh All</button>
         <button class="btn btn-sm btn-danger" onclick="deleteTeam('{{ team.id }}', '{{ team.name }}')">Delete</button>
       </div>

@@ -98,6 +98,22 @@ def api_create_team():
     return jsonify({"success": True, "team": team})
 
 
+@app.route("/api/teams/<team_id>/move", methods=["POST"])
+def api_move_team(team_id):
+    data = storage.load()
+    direction = request.json.get("direction", 0)
+    teams = data["teams"]
+    idx = next((i for i, t in enumerate(teams) if t["id"] == team_id), None)
+    if idx is None:
+        return jsonify({"error": "Team not found"}), 404
+    new_idx = idx + direction
+    if new_idx < 0 or new_idx >= len(teams):
+        return jsonify({"success": True})  # already at edge
+    teams[idx], teams[new_idx] = teams[new_idx], teams[idx]
+    storage.save(data)
+    return jsonify({"success": True})
+
+
 @app.route("/api/teams/<team_id>", methods=["PUT"])
 def api_update_team(team_id):
     data = storage.load()

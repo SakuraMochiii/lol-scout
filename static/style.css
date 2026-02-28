@@ -406,6 +406,7 @@ h2 { font-size: 16px; }
   padding: 16px;
 }
 .manage-team-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.reorder-btn { padding: 2px 6px; font-size: 10px; line-height: 1; }
 .team-name-input { font-weight: 600; font-size: 15px; width: 200px; }
 .add-player-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
 .add-player-form .input { flex: 1; min-width: 200px; }

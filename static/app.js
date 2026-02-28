@@ -159,6 +159,20 @@ async function deleteTeam(teamId, teamName) {
   }
 }
 
+async function moveTeam(teamId, direction) {
+  try {
+    const res = await fetch(`/api/teams/${teamId}/move`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ direction }),
+    });
+    const data = await res.json();
+    if (data.success) location.reload();
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+}
+
 async function renameTeam(teamId, newName) {
   newName = newName.trim();
   if (!newName) return;
