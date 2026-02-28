@@ -379,11 +379,13 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
         "scrape_error": None,
     }
 
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     errors = []
     resolved_name = game_name
     resolved_tag = tag_line
 
-    # Fetch tier from multisearch (also resolves real name/tag)
+    # Step 1: Fetch tier from multisearch (must go first — resolves real name/tag)
     try:
         tier_data = scrape_tier_from_multisearch(game_name, tag_line)
         stats["tier"] = tier_data["tier"]
@@ -400,27 +402,29 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     slug = f"{resolved_name}-{resolved_tag}"
     stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
 
-    # Fetch season history (previous ranks, peak) from profile page
-    time.sleep(2)
-    try:
-        history = scrape_season_history(resolved_name, resolved_tag)
-        stats["previous_season_tier"] = history.get("previous_season_tier")
-        stats["peak_tier"] = history.get("peak_tier")
-        stats["season_history"] = history.get("season_history", [])
-    except ScrapeError as e:
-        errors.append(f"Season history failed: {e}")
+    # Step 2: Fetch season history + champion stats in parallel
+    # (they hit different sites: leagueofgraphs vs op.gg)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        history_future = pool.submit(scrape_season_history, resolved_name, resolved_tag)
+        champs_future = pool.submit(scrape_champions, resolved_name, resolved_tag)
 
-    # Fetch champion stats using the resolved name/tag
-    time.sleep(2)
-    try:
-        champ_data = scrape_champions(resolved_name, resolved_tag)
-        stats["season_games"] = champ_data["season_games"]
-        stats["season_wins"] = champ_data["season_wins"]
-        stats["season_losses"] = champ_data["season_losses"]
-        stats["season_winrate"] = champ_data["season_winrate"]
-        stats["champions"] = champ_data["champions"]
-    except ScrapeError as e:
-        errors.append(f"Champions fetch failed: {e}")
+        try:
+            history = history_future.result(timeout=30)
+            stats["previous_season_tier"] = history.get("previous_season_tier")
+            stats["peak_tier"] = history.get("peak_tier")
+            stats["season_history"] = history.get("season_history", [])
+        except Exception as e:
+            errors.append(f"Season history failed: {e}")
+
+        try:
+            champ_data = champs_future.result(timeout=30)
+            stats["season_games"] = champ_data["season_games"]
+            stats["season_wins"] = champ_data["season_wins"]
+            stats["season_losses"] = champ_data["season_losses"]
+            stats["season_winrate"] = champ_data["season_winrate"]
+            stats["champions"] = champ_data["champions"]
+        except Exception as e:
+            errors.append(f"Champions fetch failed: {e}")
 
     if errors:
         stats["scrape_error"] = "; ".join(errors)

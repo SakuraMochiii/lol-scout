@@ -237,20 +237,36 @@ def api_refresh_player(player_id):
         return jsonify({"error": str(e)}), 500
 
 
+def _refresh_one_player(player):
+    """Refresh a single player. Returns (player_dict, stats_or_none, error_or_none)."""
+    try:
+        stats = scraper.scrape_player(player["game_name"], player["tag_line"])
+        return player, stats, None
+    except Exception as e:
+        return player, None, str(e)
+
+
 def _refresh_team_worker(team_id, players):
-    """Background worker that refreshes each player on a team."""
+    """Background worker that refreshes all players on a team in parallel."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     job = _refresh_jobs[team_id]
-    for player in players:
-        job["current"] = player["game_name"]
-        try:
-            data = storage.load()
-            stats = scraper.scrape_player(player["game_name"], player["tag_line"])
-            storage.update_player(data, player["id"], stats=stats)
-            job["results"].append({"player": player["game_name"], "success": True})
-        except Exception as e:
-            job["results"].append({"player": player["game_name"], "success": False, "error": str(e)})
-        job["done"] += 1
-        time.sleep(0.5)
+    # Run up to 3 players at once (balances speed vs rate limiting)
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {
+            pool.submit(_refresh_one_player, p): p for p in players
+        }
+        for future in as_completed(futures):
+            player, stats, error = future.result()
+            if stats:
+                data = storage.load()
+                storage.update_player(data, player["id"], stats=stats)
+                job["results"].append({"player": player["game_name"], "success": True})
+            else:
+                job["results"].append({"player": player["game_name"], "success": False, "error": error})
+            job["done"] += 1
+            job["current"] = player["game_name"]
+
     job["status"] = "complete"
     job["current"] = None
 
