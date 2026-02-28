@@ -17,7 +17,9 @@
   <div class="form-row">
     <input type="text" id="new-team-name" placeholder="Team name" class="input">
     <button class="btn" onclick="addTeam()">Add Team</button>
+    <button class="btn btn-accent" onclick="refreshAllTeams()">Refresh All Teams</button>
   </div>
+  <div class="refresh-status" id="refresh-all-status" style="display:none"></div>
 
   <div class="manage-teams">
     {% for team in data.teams %}
@@ -59,7 +61,7 @@
       {% if team.players %}
       <table class="manage-player-table">
         <thead>
-          <tr><th>Role</th><th>Player</th><th>Rank</th><th>Last Season</th><th>Peak</th><th>Status</th><th></th></tr>
+          <tr><th>Role</th><th>Player</th><th>Peak</th><th>Rank</th><th>Last Season</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
           {% for player in team.players %}
@@ -73,6 +75,12 @@
             </td>
             <td>{% if player.stats and player.stats.opgg_url %}<a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener">{{ player.game_name }}#{{ player.tag_line }}</a>{% else %}{{ player.game_name }}#{{ player.tag_line }}{% endif %}</td>
             <td>
+              <input type="text" class="input-mini" style="width:80px"
+                     value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
+                     placeholder="e.g. M 100LP"
+                     onchange="updatePlayerExtra('{{ player.id }}', 'peak_tier', this.value)">
+            </td>
+            <td>
               {% if player.stats %}
               <span style="color: {{ player.stats.tier|tier_color }}">{{ player|tier_display }}</span>
               {% else %}
@@ -84,12 +92,6 @@
                      value="{{ player.stats.previous_season_tier or '' if player.stats else '' }}"
                      placeholder="e.g. D2"
                      onchange="updatePlayerExtra('{{ player.id }}', 'previous_season_tier', this.value)">
-            </td>
-            <td>
-              <input type="text" class="input-mini" style="width:80px"
-                     value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
-                     placeholder="e.g. M 100LP"
-                     onchange="updatePlayerExtra('{{ player.id }}', 'peak_tier', this.value)">
             </td>
             <td>
               {% if player.is_substitute %}

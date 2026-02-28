@@ -316,6 +316,38 @@ def api_refresh_status(team_id):
     return jsonify(job)
 
 
+@app.route("/api/refresh-all", methods=["POST"])
+def api_refresh_all():
+    data = storage.load()
+    all_players = []
+    for team in data["teams"]:
+        all_players.extend(team["players"])
+
+    if not all_players:
+        return jsonify({"error": "No players to refresh"}), 400
+
+    job_id = "__all__"
+    if job_id in _refresh_jobs and _refresh_jobs[job_id]["status"] == "running":
+        return jsonify({"success": True, "status": "already_running"})
+
+    _refresh_jobs[job_id] = {
+        "status": "running",
+        "results": [],
+        "total": len(all_players),
+        "done": 0,
+        "current": None,
+    }
+
+    thread = threading.Thread(
+        target=_refresh_team_worker,
+        args=(job_id, list(all_players)),
+        daemon=True,
+    )
+    thread.start()
+
+    return jsonify({"success": True, "status": "started", "total": len(all_players)})
+
+
 @app.route("/api/import/multi-link", methods=["POST"])
 def api_import_multi():
     url = request.json.get("url", "")

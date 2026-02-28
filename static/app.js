@@ -40,6 +40,23 @@ async function refreshPlayer(playerId, btn) {
   }
 }
 
+async function refreshAllTeams() {
+  const status = document.getElementById('refresh-all-status');
+  status.style.display = 'block';
+  status.textContent = 'Starting refresh for all teams...';
+  try {
+    const res = await fetch('/api/refresh-all', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      status.textContent = 'Failed: ' + (data.error || 'Unknown error');
+      return;
+    }
+    pollRefreshStatus('__all__', 'refresh-all-status', false);
+  } catch (e) {
+    status.textContent = 'Network error: ' + e.message;
+  }
+}
+
 async function refreshTeam(teamId) {
   _startRefresh(teamId, 'refresh-status', true);
 }
