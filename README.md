@@ -1,4 +1,4 @@
-# LOL IMs Info
+# LOL Team Analysis Tool
 
 A local web app for scouting League of Legends tournament opponents. Pulls player data from op.gg, u.gg, and leagueofgraphs to give you a complete picture of each team's roster.
 
