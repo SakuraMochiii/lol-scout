@@ -31,8 +31,6 @@
         <span class="tier-badge" style="color: {{ player.stats.tier|tier_color }}">
           {{ player|tier_display }}
         </span>
-        {% elif player.stats.previous_season_tier %}
-        <span class="past-rank-inline">Last: {{ player.stats.previous_season_tier }}</span>
         {% else %}
         <span class="tier-badge unranked">Unranked</span>
         {% endif %}
