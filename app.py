@@ -138,9 +138,15 @@ def api_create_player():
             team["players"] = []
             storage.save(data)
 
+    # Auto-assign roles in order when pasting a multi-player link
+    role_sequence = ["top", "jungle", "mid", "bot", "support"]
     added = []
-    for game_name, tag_line in parsed:
-        player = storage.add_player(data, team_id, game_name, tag_line, role, is_sub)
+    for i, (game_name, tag_line) in enumerate(parsed):
+        if len(parsed) >= 5 and i < 5:
+            player_role = role_sequence[i]
+        else:
+            player_role = role
+        player = storage.add_player(data, team_id, game_name, tag_line, player_role, is_sub)
         if player:
             added.append(player)
 
