@@ -484,6 +484,29 @@ def tier_display_filter(player):
     return f"{tier} {roman}" + (f" {lp} LP" if lp else "")
 
 
+@app.template_filter("current_higher_than_peak")
+def current_higher_than_peak_filter(player):
+    """Returns True if current rank is higher than peak rank."""
+    stats = player.get("stats")
+    if not stats or stats.get("tier") == "UNRANKED" or not stats.get("peak_tier"):
+        return False
+    tier_order = {
+        "challenger": 0, "grandmaster": 1, "master": 2, "diamond": 3,
+        "emerald": 4, "platinum": 5, "gold": 6, "silver": 7, "bronze": 8, "iron": 9,
+    }
+    div_map = {"I": 1, "II": 2, "III": 3, "IV": 4}
+    # Current rank
+    cur_tier = stats["tier"].lower()
+    cur_div = stats.get("division") or 1
+    cur_key = (tier_order.get(cur_tier, 99), cur_div)
+    # Peak rank (e.g. "Platinum I")
+    peak_parts = stats["peak_tier"].split()
+    peak_tier = peak_parts[0].lower() if peak_parts else ""
+    peak_div = div_map.get(peak_parts[1], 1) if len(peak_parts) > 1 else 1
+    peak_key = (tier_order.get(peak_tier, 99), peak_div)
+    return cur_key < peak_key  # lower = better
+
+
 if __name__ == "__main__":
     Path("data").mkdir(exist_ok=True)
     if not storage.DATA_FILE.exists():

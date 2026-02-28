@@ -85,7 +85,12 @@
             </td>
             <td>
               {% if player.stats and player.stats.peak_tier %}
+              {% set cur_higher = player|current_higher_than_peak %}
+              {% if cur_higher %}
+              <span class="muted">{{ player.stats.peak_tier }}</span>
+              {% else %}
               <span style="color: {{ player.stats.peak_tier|peak_color }}; font-weight:600;">{{ player.stats.peak_tier }}</span>
+              {% endif %}
               {% else %}
               <input type="text" class="input-mini" style="width:80px"
                      value=""
@@ -95,7 +100,11 @@
             </td>
             <td>
               {% if player.stats and player.stats.tier != 'UNRANKED' %}
+              {% if player.stats.peak_tier and (player|current_higher_than_peak) %}
+              <span style="color: {{ player.stats.tier|tier_color }}; font-weight:600;">{{ player|tier_display }}</span>
+              {% else %}
               <span class="muted">{{ player|tier_display }}</span>
+              {% endif %}
               {% else %}
               <span class="muted">—</span>
               {% endif %}

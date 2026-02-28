@@ -35,11 +35,20 @@
       <span class="role-tag role-{{ player.role }}">{{ player.role[:3].upper() }}</span>
       <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
       {% if stats %}
+      {% set cur_higher = player|current_higher_than_peak %}
       {% if stats.peak_tier %}
+      {% if cur_higher %}
+      <span class="current-rank-inline">Peak: {{ stats.peak_tier }}</span>
+      {% else %}
       <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">Peak: {{ stats.peak_tier }}</span>
       {% endif %}
+      {% endif %}
       {% if stats.tier != 'UNRANKED' %}
+      {% if cur_higher %}
+      <span class="tier-badge" style="color: {{ stats.tier|tier_color }}">Cur: {{ player|tier_display }}</span>
+      {% else %}
       <span class="current-rank-inline">Cur: {{ player|tier_display }}</span>
+      {% endif %}
       {% else %}
       <span class="current-rank-inline unranked">Unranked</span>
       {% endif %}
@@ -195,10 +204,19 @@
       <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
       <span class="sub-badge">SUB</span>
       {% if stats %}
+      {% set cur_higher = player|current_higher_than_peak %}
       {% if stats.peak_tier %}
+      {% if cur_higher %}
+      <span class="current-rank-inline">Peak: {{ stats.peak_tier }}</span>
+      {% else %}
       <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">Peak: {{ stats.peak_tier }}</span>
       {% endif %}
+      {% endif %}
+      {% if cur_higher %}
+      <span class="tier-badge" style="color: {{ stats.tier|tier_color }}">Cur: {{ player|tier_display }}</span>
+      {% else %}
       <span class="current-rank-inline">Cur: {{ player|tier_display }}</span>
+      {% endif %}
       <span class="wr-badge">{{ stats.season_winrate }}% WR</span>
       {% endif %}
       <span class="expand-arrow">&#9660;</span>
