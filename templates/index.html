@@ -28,14 +28,12 @@
         <span class="player-name-mini">{{ player.game_name }}</span>
         {% if player.stats %}
         {% if player.stats.peak_tier %}
-        <span class="peak-rank-inline" style="color: {{ player.stats.peak_tier|peak_color }}">Peak: {{ player.stats.peak_tier }}</span>
+        <span class="tier-badge" style="color: {{ player.stats.peak_tier|peak_color }}">Peak: {{ player.stats.peak_tier }}</span>
         {% endif %}
         {% if player.stats.tier != 'UNRANKED' %}
-        <span class="tier-badge" style="color: {{ player.stats.tier|tier_color }}">
-          {{ player|tier_display }}
-        </span>
+        <span class="current-rank-inline">{{ player|tier_display }}</span>
         {% else %}
-        <span class="tier-badge unranked">Unranked</span>
+        <span class="current-rank-inline unranked">Unranked</span>
         {% endif %}
         {% else %}
         <span class="tier-badge unranked">Unranked</span>
