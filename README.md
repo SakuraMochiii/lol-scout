@@ -4,21 +4,22 @@ A local web app for scouting League of Legends tournament opponents. Pulls playe
 
 ## Features
 
-- **Player Data** — current rank, peak rank (all-time), last season rank, season history
+- **Player Data** — current rank, peak rank (from past seasons, not including current), last season rank, full season history
 - **Champion Stats** — most played champions with games, winrate, KDA, and the role they were actually played in (from match history)
 - **Champion Mastery** — mastery levels and points per champion
-- **Team Management** — 8 teams per tournament, support for substitutes, reorder teams, overwrite rosters by re-pasting op.gg links
-- **OTP / Main Detection** — flags one-tricks (40%+ games on one champ) and mains (2x games over next most played)
+- **Team Management** — 8 teams per tournament, support for substitutes, reorder teams, editable player names, overwrite rosters by re-pasting op.gg links
+- **OTP / Main Detection** — flags one-tricks (20+ games with almost no other champs) and mains (scaled ratio based on game count)
 - **Ban/Pick Analysis** *(WIP)* — recommends bans based on one-tricks, comfort picks, and multi-player overlap; suggests picks based on your team's champion pools
-- **Export** — export team data as a shareable HTML page that anyone can open
+- **Export** — export team data as a shareable self-contained HTML page that anyone can open
+- **Auto-Refresh** — triggers op.gg profile renewal before scraping to ensure fresh data from Riot's API
 
 ## Data Sources
 
 | Source | Data |
 |--------|------|
-| [op.gg](https://op.gg) | Current rank, champion stats (games/WR/KDA), mastery |
+| [op.gg](https://op.gg) | Current rank, champion stats (games/WR/KDA), mastery, profile renewal |
 | [u.gg](https://u.gg) | Per-champion role from match history (GraphQL API) |
-| [leagueofgraphs](https://leagueofgraphs.com) | Peak rank and season history (actual peak, not just end-of-season) |
+| [leagueofgraphs](https://leagueofgraphs.com) | Peak rank and season history (actual peak reached during each season, not just end-of-season) |
 
 No API keys required — all data is scraped from public pages.
 
@@ -45,6 +46,7 @@ Open http://localhost:5000
 
 - **Refresh All** per team or **Refresh All Teams** to update everyone
 - Runs in the background — you can navigate away
+- Each refresh triggers an op.gg profile update first, then scrapes the fresh data
 - Data is cached in `data/tournament.json`
 
 ### Exporting
@@ -58,12 +60,19 @@ Open http://localhost:5000
 - op.gg multi link: paste the full URL
 - Supports names with spaces and special characters
 
+## Rank Display
+
+- **Peak** (color-coded badge) — highest rank achieved in any past season (not including current season), sourced from leagueofgraphs
+- **Cur** (italic) — current ranked tier and LP
+- **Last** — end-of-season rank from the most recent completed season
+
 ## Notes
 
 - Only supports **NA** region currently
 - Scraping can occasionally fail if op.gg/u.gg rate limits — just retry
 - `data/tournament.json` stores all state — back it up if needed
 - Ban/Pick analysis is a work in progress
+- Thread-safe storage prevents data corruption during parallel refreshes
 
 ## Requirements
 
