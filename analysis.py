@@ -81,12 +81,13 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         if len(sorted_champs) >= 2:
             top_games = sorted_champs[0].get("games", 0)
             second_games = sorted_champs[1].get("games", 0)
-            ratio_needed = max(2.0 - (top_games - 10) * 0.0125, 1.5)
-            if top_games >= 20 and second_games <= 2:
+            otp_ratio = max(5.0 - (top_games - 10) * 0.05, 3.0)
+            main_ratio = max(2.0 - (top_games - 10) * 0.0125, 1.5)
+            if top_games >= 20 and second_games > 0 and top_games / second_games >= otp_ratio:
                 otp_name = sorted_champs[0]["champion_name"]
-            elif top_games >= 10 and second_games > 0 and top_games / second_games >= ratio_needed:
+            elif top_games >= 10 and second_games > 0 and top_games / second_games >= main_ratio:
                 main_name = sorted_champs[0]["champion_name"]
-        elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
+        elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 20:
             otp_name = sorted_champs[0]["champion_name"]
 
         # Primary: score by ranked games × rank weight
@@ -317,10 +318,13 @@ def identify_one_tricks(team: dict) -> list[dict]:
         second_games = sorted_champs[1].get("games", 0) if len(sorted_champs) >= 2 else 0
         total = stats.get("season_games") or sum(c["games"] for c in stats["champions"])
 
-        ratio_needed = max(2.0 - (top_games - 10) * 0.0125, 1.5)
-        if top_games >= 20 and second_games <= 2:
+        otp_ratio = max(5.0 - (top_games - 10) * 0.05, 3.0)
+        main_ratio = max(2.0 - (top_games - 10) * 0.0125, 1.5)
+        if top_games >= 20 and second_games > 0 and top_games / second_games >= otp_ratio:
             tag = "OTP"
-        elif top_games >= 10 and second_games > 0 and top_games / second_games >= ratio_needed:
+        elif top_games >= 20 and second_games == 0:
+            tag = "OTP"
+        elif top_games >= 10 and second_games > 0 and top_games / second_games >= main_ratio:
             tag = "MAIN"
         else:
             continue

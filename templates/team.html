@@ -123,10 +123,11 @@
               {% endif %}
               {% if loop.index == 1 and champ.games >= 10 and stats.champions|length >= 2 %}
               {% set second_games = stats.champions[1].games %}
-              {% set ratio_needed = [2.0 - (champ.games - 10) * 0.0125, 1.5]|max %}
-              {% if champ.games >= 20 and second_games <= 2 %}
+              {% set otp_ratio = [5.0 - (champ.games - 10) * 0.05, 3.0]|max %}
+              {% set main_ratio = [2.0 - (champ.games - 10) * 0.0125, 1.5]|max %}
+              {% if champ.games >= 20 and second_games > 0 and champ.games / second_games >= otp_ratio %}
               <span class="otp-badge">OTP</span>
-              {% elif second_games > 0 and champ.games / second_games >= ratio_needed %}
+              {% elif second_games > 0 and champ.games / second_games >= main_ratio %}
               <span class="main-badge">MAIN</span>
               {% endif %}
               {% elif loop.index == 1 and stats.champions|length == 1 and champ.games >= 20 %}
