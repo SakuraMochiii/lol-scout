@@ -53,6 +53,17 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         tier_weight = TIER_WEIGHTS.get(tier, 1.0)
         pname = player["game_name"]
 
+        # Determine most-picked: #1 champ has 2x+ games of #2
+        sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
+        most_picked_name = None
+        if len(sorted_champs) >= 2:
+            top = sorted_champs[0].get("games", 0)
+            second = sorted_champs[1].get("games", 0)
+            if top >= 10 and (second == 0 or top / max(second, 1) >= 2):
+                most_picked_name = sorted_champs[0]["champion_name"]
+        elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
+            most_picked_name = sorted_champs[0]["champion_name"]
+
         for champ in stats["champions"][:10]:
             key = champ["champion_name"]
             games = champ.get("games", 0)
@@ -64,13 +75,23 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
             entry["champion_key"] = champ.get("champion_key", key)
             entry["champion_id"] = champ.get("champion_id")
 
-            # One-trick detection
-            if games_pct >= 0.40:
+            # One-trick / most-picked detection
+            is_otp = games_pct >= 0.40
+            is_most_picked = key == most_picked_name and not is_otp
+
+            if is_otp:
                 score = 40 + (games_pct - 0.40) * 100
                 entry["score"] += score * tier_weight
                 entry["reasons"].append(
                     f"One-trick: {pname} ({games}g, {winrate:.0f}% WR, "
                     f"{games_pct * 100:.0f}% of games)"
+                )
+            elif is_most_picked:
+                second_games = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
+                score = 25 + (games - second_games) * 0.3
+                entry["score"] += score * tier_weight
+                entry["reasons"].append(
+                    f"Most picked: {pname} ({games}g vs {second_games}g next, {winrate:.0f}% WR)"
                 )
 
             # High winrate comfort
@@ -176,7 +197,7 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
 
 
 def identify_one_tricks(team: dict, threshold: float = 0.40) -> list[dict]:
-    """Find players who are one-tricks on the team."""
+    """Find players who are one-tricks or have a clear most-picked champion."""
     results = []
     for player in team.get("players", []):
         stats = player.get("stats")
@@ -187,7 +208,11 @@ def identify_one_tricks(team: dict, threshold: float = 0.40) -> list[dict]:
         )
         if total == 0:
             continue
-        for champ in stats["champions"][:3]:
+
+        sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
+
+        # Check for OTP (40%+ of games)
+        for champ in sorted_champs[:3]:
             pct = champ["games"] / total
             if pct >= threshold:
                 results.append({
@@ -198,5 +223,29 @@ def identify_one_tricks(team: dict, threshold: float = 0.40) -> list[dict]:
                     "games": champ["games"],
                     "pct": round(pct * 100, 1),
                     "winrate": champ.get("winrate", 0),
+                    "tag": "OTP",
+                })
+
+        # Check for most-picked (2x+ games over #2, not already flagged as OTP)
+        if len(sorted_champs) >= 2:
+            top = sorted_champs[0]
+            second = sorted_champs[1]
+            top_games = top.get("games", 0)
+            second_games = second.get("games", 0)
+            top_pct = top_games / total
+            if (
+                top_games >= 10
+                and (second_games == 0 or top_games / max(second_games, 1) >= 2)
+                and top_pct < threshold  # not already an OTP
+            ):
+                results.append({
+                    "player": player["game_name"],
+                    "role": player.get("role", "?"),
+                    "champion": top["champion_name"],
+                    "champion_key": top.get("champion_key", ""),
+                    "games": top_games,
+                    "pct": round(top_pct * 100, 1),
+                    "winrate": top.get("winrate", 0),
+                    "tag": "Most Picked",
                 })
     return results

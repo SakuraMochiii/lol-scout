@@ -104,6 +104,8 @@
             <span class="champ-name">{{ champ.champion_name }}</span>
             {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
             <span class="otp-badge">OTP</span>
+            {% elif loop.index == 1 and stats.champions|length >= 2 and champ.games >= 10 and champ.games >= stats.champions[1].games * 2 %}
+            <span class="main-badge">MAIN</span>
             {% endif %}
           </div>
           <span class="champ-games">{{ champ.games }}g</span>

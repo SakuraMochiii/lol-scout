@@ -11,12 +11,13 @@
 
 {% if one_tricks %}
 <div class="card">
-  <h2 class="card-title">One-Tricks Detected</h2>
+  <h2 class="card-title">Key Champions</h2>
   <div class="otp-list">
     {% for otp in one_tricks %}
     <div class="otp-item">
       <img class="champ-icon" src="{{ otp.champion_key|champion_icon }}"
            onerror="this.style.display='none'">
+      <span class="otp-badge">{{ otp.tag|default('OTP') }}</span>
       <div>
         <strong>{{ otp.player }}</strong> ({{ otp.role }})
         — {{ otp.champion }} {{ otp.pct }}% of games ({{ otp.games }}g, {{ otp.winrate }}% WR)
