@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Manage — LoL Scout{% endblock %}
+{% block content %}
+<h1>Manage Tournament</h1>
+
+<div class="card">
+  <h2 class="card-title">Season Settings</h2>
+  <div class="form-row">
+    <label>Season Name</label>
+    <input type="text" id="season-name" value="{{ data.meta.season_name }}" class="input">
+    <button class="btn btn-sm" onclick="updateSeason()">Save</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">Teams</h2>
+  <div class="form-row">
+    <input type="text" id="new-team-name" placeholder="Team name" class="input">
+    <button class="btn" onclick="addTeam()">Add Team</button>
+  </div>
+
+  <div class="manage-teams">
+    {% for team in data.teams %}
+    <div class="manage-team-row" data-team="{{ team.id }}">
+      <div class="manage-team-header">
+        <strong>{{ team.name }}</strong>
+        {% if data.meta.my_team_id == team.id %}
+        <span class="my-team-badge">MY TEAM</span>
+        {% else %}
+        <button class="btn btn-sm" onclick="setMyTeam('{{ team.id }}')">Set as My Team</button>
+        {% endif %}
+        <span class="muted">{{ team.players|length }} player{{ 's' if team.players|length != 1 else '' }}</span>
+        <button class="btn btn-sm btn-danger" onclick="deleteTeam('{{ team.id }}', '{{ team.name }}')">Delete</button>
+      </div>
+
+      <div class="add-player-form">
+        <input type="text" placeholder="Username#TAG or op.gg link"
+               class="input player-input" data-team="{{ team.id }}">
+        <select class="input role-select" data-team="{{ team.id }}">
+          <option value="top">Top</option>
+          <option value="jungle">Jungle</option>
+          <option value="mid">Mid</option>
+          <option value="bot">Bot</option>
+          <option value="support">Support</option>
+          <option value="fill">Fill</option>
+        </select>
+        <label class="sub-checkbox">
+          <input type="checkbox" class="sub-check" data-team="{{ team.id }}"> Sub
+        </label>
+        <button class="btn btn-sm" onclick="addPlayer('{{ team.id }}')">Add Player</button>
+      </div>
+
+      {% if team.players %}
+      <table class="manage-player-table">
+        <thead>
+          <tr><th>Role</th><th>Player</th><th>Rank</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for player in team.players %}
+          <tr>
+            <td>
+              <select class="input-mini" onchange="updatePlayerRole('{{ player.id }}', this.value)">
+                {% for r in ["top","jungle","mid","bot","support","fill"] %}
+                <option value="{{ r }}" {{ 'selected' if player.role == r else '' }}>{{ r|upper }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>{{ player.game_name }}#{{ player.tag_line }}</td>
+            <td>
+              {% if player.stats %}
+              <span style="color: {{ player.stats.tier|tier_color }}">{{ player|tier_display }}</span>
+              {% else %}
+              <span class="muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if player.is_substitute %}
+              <span class="sub-badge">SUB</span>
+              {% else %}
+              <span class="muted">Starter</span>
+              {% endif %}
+            </td>
+            <td class="actions-cell">
+              <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
+              <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

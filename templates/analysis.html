@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ my_team.name }} vs {{ opp_team.name }} — LoL Scout{% endblock %}
+{% block content %}
+<div class="analysis-header">
+  <h1>
+    <a href="/team/{{ my_team.id }}">{{ my_team.name }}</a>
+    <span class="vs">vs</span>
+    <a href="/team/{{ opp_team.id }}">{{ opp_team.name }}</a>
+  </h1>
+</div>
+
+{% if one_tricks %}
+<div class="card">
+  <h2 class="card-title">One-Tricks Detected</h2>
+  <div class="otp-list">
+    {% for otp in one_tricks %}
+    <div class="otp-item">
+      <img class="champ-icon" src="{{ otp.champion_key|champion_icon }}"
+           onerror="this.style.display='none'">
+      <div>
+        <strong>{{ otp.player }}</strong> ({{ otp.role }})
+        — {{ otp.champion }} {{ otp.pct }}% of games ({{ otp.games }}g, {{ otp.winrate }}% WR)
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2 class="card-title">Ban Recommendations</h2>
+  <p class="muted" style="margin-bottom: 12px">
+    Bans scored by one-trick status, winrate, rank, and multi-player overlap.
+  </p>
+
+  {% if ban_recs %}
+  <div class="ban-list">
+    {% for ban in ban_recs[:10] %}
+    <div class="ban-item {{ 'priority' if loop.index <= 5 else '' }}">
+      <span class="ban-rank">#{{ loop.index }}</span>
+      <img class="champ-icon" src="{{ ban.champion_key|champion_icon }}"
+           onerror="this.style.display='none'">
+      <div class="ban-info">
+        <div class="ban-champ">{{ ban.champion_name }}</div>
+        <div class="ban-reasons">
+          {% for reason in ban.reasons %}
+          <span class="reason-tag">{{ reason }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="ban-score-container">
+        <div class="ban-score-bar" style="width: {{ [ban.score / (ban_recs[0].score if ban_recs[0].score else 1) * 100, 100]|min }}%"></div>
+        <span class="ban-score">{{ ban.score }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No data available for ban analysis. Refresh opponent team data first.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2 class="card-title">Pick Recommendations ({{ my_team.name }})</h2>
+  <p class="muted" style="margin-bottom: 12px">
+    Best picks from your team's champion pools, scored by winrate, experience, and KDA.
+  </p>
+
+  {% if pick_recs %}
+  <div class="pick-tabs">
+    {% for role in ["top", "jungle", "mid", "bot", "support"] %}
+    {% if role in pick_recs %}
+    <button class="pick-tab {{ 'active' if loop.first else '' }}"
+            onclick="showPickTab('{{ role }}', this)">
+      {{ role|upper }}
+    </button>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  {% for role, picks in pick_recs.items() %}
+  <div class="pick-panel {{ '' if loop.first else 'hidden' }}" data-role="{{ role }}">
+    {% for pick in picks %}
+    <div class="pick-item {{ 'banned' if pick.likely_banned else '' }}">
+      <img class="champ-icon" src="{{ pick.champion_key|champion_icon }}"
+           onerror="this.style.display='none'">
+      <div class="pick-info">
+        <span class="pick-champ">{{ pick.champion_name }}</span>
+        <span class="pick-player muted">{{ pick.player }}</span>
+      </div>
+      <span class="pick-wr {{ 'good' if pick.winrate >= 55 else 'bad' if pick.winrate < 48 else '' }}">
+        {{ pick.winrate }}% WR
+      </span>
+      <span class="pick-games">{{ pick.games }}g</span>
+      <span class="pick-kda">{{ pick.kda }} KDA</span>
+      {% if pick.likely_banned %}
+      <span class="likely-ban-tag">Likely Banned</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% if not picks %}
+    <p class="muted">No champion data for this role.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="muted">No data available. Make sure your team has player data with roles assigned.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showPickTab(role, btn) {
+  document.querySelectorAll('.pick-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pick-panel').forEach(p => p.classList.add('hidden'));
+  btn.classList.add('active');
+  document.querySelector('.pick-panel[data-role="' + role + '"]').classList.remove('hidden');
+}
+</script>
+{% endblock %}

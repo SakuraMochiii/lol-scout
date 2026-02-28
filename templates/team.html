@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }} — LoL Scout{% endblock %}
+{% block content %}
+<div class="team-header">
+  <h1>
+    {{ team.name }}
+    {% if is_my_team %}<span class="my-team-badge">MY TEAM</span>{% endif %}
+  </h1>
+  <div class="team-header-actions">
+    <button class="btn" onclick="refreshTeam('{{ team.id }}')">Refresh All</button>
+    {% if data.meta.my_team_id and not is_my_team %}
+    <a href="/analysis/{{ team.id }}" class="btn btn-accent">Ban/Pick Analysis</a>
+    {% endif %}
+  </div>
+</div>
+
+<div id="refresh-status" class="refresh-status" style="display:none"></div>
+
+{% set starters = team.players|rejectattr("is_substitute")|list %}
+{% set subs = team.players|selectattr("is_substitute")|list %}
+
+{% if not team.players %}
+<div class="empty-state">
+  <p>No players on this team. <a href="/manage">Add players</a>.</p>
+</div>
+{% endif %}
+
+{% if starters %}
+<h2 class="section-title">Starters</h2>
+<div class="player-list">
+  {% for player in starters %}
+  {% set stats = player.stats %}
+  <div class="player-card" data-player="{{ player.id }}">
+    <div class="player-header" onclick="togglePlayer(this)">
+      <span class="role-tag role-{{ player.role }}">{{ player.role[:3].upper() }}</span>
+      <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
+      {% if stats %}
+      <span class="tier-badge" style="color: {{ stats.tier|tier_color }}">{{ player|tier_display }}</span>
+      <span class="wr-badge {{ 'good' if stats.season_winrate >= 52 else 'bad' if stats.season_winrate < 48 else '' }}">
+        {{ stats.season_winrate }}% WR
+      </span>
+      <span class="games-count">{{ stats.season_games }} games</span>
+      {% else %}
+      <span class="tier-badge unranked">No data</span>
+      {% endif %}
+      <span class="expand-arrow">&#9660;</span>
+    </div>
+
+    <div class="player-body" style="display:none">
+      {% if stats and stats.scrape_error %}
+      <div class="alert alert-warn">{{ stats.scrape_error }}</div>
+      {% endif %}
+
+      {% if stats and stats.champions %}
+      <div class="champ-list">
+        <div class="champ-list-header">
+          <span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span>
+        </div>
+        {% for champ in stats.champions[:10] %}
+        <div class="champ-row">
+          <div class="champ-info">
+            <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}"
+                 alt="{{ champ.champion_name }}"
+                 onerror="this.style.display='none'">
+            <span class="champ-name">{{ champ.champion_name }}</span>
+            {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
+            <span class="otp-badge">OTP</span>
+            {% endif %}
+          </div>
+          <span class="champ-games">{{ champ.games }}g</span>
+          <div class="wr-bar-container">
+            <div class="wr-bar" style="width: {{ champ.winrate }}%"></div>
+            <span class="wr-text {{ 'good' if champ.winrate >= 55 else 'bad' if champ.winrate < 48 else '' }}">
+              {{ champ.winrate }}%
+            </span>
+          </div>
+          <span class="champ-kda">{{ champ.kda }} KDA</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% elif not stats %}
+      <p class="muted">No data yet. Click refresh to fetch from op.gg.</p>
+      {% else %}
+      <p class="muted">No champion data available.</p>
+      {% endif %}
+
+      <div class="player-footer">
+        {% if stats %}
+        <span class="muted">Updated: {{ stats.last_updated[:16].replace('T', ' ') }}</span>
+        {% endif %}
+        <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
+        <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if subs %}
+<h2 class="section-title">Substitutes</h2>
+<div class="player-list">
+  {% for player in subs %}
+  {% set stats = player.stats %}
+  <div class="player-card sub-card" data-player="{{ player.id }}">
+    <div class="player-header" onclick="togglePlayer(this)">
+      <span class="role-tag role-{{ player.role }}">{{ player.role[:3].upper() }}</span>
+      <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
+      <span class="sub-badge">SUB</span>
+      {% if stats %}
+      <span class="tier-badge" style="color: {{ stats.tier|tier_color }}">{{ player|tier_display }}</span>
+      <span class="wr-badge">{{ stats.season_winrate }}% WR</span>
+      {% endif %}
+      <span class="expand-arrow">&#9660;</span>
+    </div>
+
+    <div class="player-body" style="display:none">
+      {% if stats and stats.champions %}
+      <div class="champ-list">
+        <div class="champ-list-header">
+          <span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span>
+        </div>
+        {% for champ in stats.champions[:10] %}
+        <div class="champ-row">
+          <div class="champ-info">
+            <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}"
+                 alt="{{ champ.champion_name }}"
+                 onerror="this.style.display='none'">
+            <span class="champ-name">{{ champ.champion_name }}</span>
+          </div>
+          <span class="champ-games">{{ champ.games }}g</span>
+          <div class="wr-bar-container">
+            <div class="wr-bar" style="width: {{ champ.winrate }}%"></div>
+            <span class="wr-text">{{ champ.winrate }}%</span>
+          </div>
+          <span class="champ-kda">{{ champ.kda }} KDA</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No data yet.</p>
+      {% endif %}
+      <div class="player-footer">
+        <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
+        <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
