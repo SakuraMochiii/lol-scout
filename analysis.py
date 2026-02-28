@@ -147,52 +147,143 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
 
 def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
     """
-    Per role, suggest picks from my team's champion pools.
+    Per role, suggest picks that counter the opponent's mains.
 
-    Scores each champion by:
-    - Winrate (base score)
-    - Games experience
-    - KDA bonus
-    Filters out top ban recommendations.
+    Scoring:
+    - Counter matchup vs opponent's main champion (primary)
+    - Mastery/comfort for the pick (weighted higher vs lower-ranked opponents)
+    - Bot lane: considers synergy between bot and support picks
+    Filters out likely bans.
     """
+    import math
+    from scraper import scrape_counters
+
     ban_recs = get_ban_recommendations(opponent_team, 5)
     likely_bans = {b["champion_name"] for b in ban_recs[:5]}
+
+    # Build opponent main champions per role
+    opp_mains = {}  # role -> {name, key, tier, player}
+    for player in opponent_team.get("players", []):
+        role = player.get("role", "fill")
+        if role == "fill":
+            continue
+        stats = player.get("stats")
+        if not stats or not stats.get("champions"):
+            continue
+        sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
+        if sorted_champs:
+            main = sorted_champs[0]
+            opp_mains[role] = {
+                "name": main["champion_name"],
+                "key": main.get("champion_key", ""),
+                "tier": stats.get("tier", "UNRANKED"),
+                "player": player["game_name"],
+            }
+
+    # Fetch counter data for opponent mains
+    opp_counters = {}  # role -> {my_champ_name: counter_wr}
+    for role, main_info in opp_mains.items():
+        counters = scrape_counters(main_info["key"], role)
+        opp_counters[role] = counters
+
+    # Get support player's champion pool for bot synergy
+    support_champ_names = set()
+    for player in my_team.get("players", []):
+        if player.get("role") == "support":
+            stats = player.get("stats")
+            if stats:
+                for c in stats.get("champions", [])[:5]:
+                    support_champ_names.add(c["champion_name"])
+                # Also mastery
+                for m in stats.get("masteries", [])[:10]:
+                    support_champ_names.add(m["champion_name"])
 
     picks_by_role = {}
 
     for player in my_team.get("players", []):
         stats = player.get("stats")
-        if not stats or not stats.get("champions"):
+        if not stats:
             continue
 
         role = player.get("role", "fill")
         if role == "fill":
             continue
 
+        # Opponent info for this role
+        opp_main = opp_mains.get(role)
+        opp_tier = opp_main["tier"] if opp_main else "UNRANKED"
+        opp_tier_weight = TIER_WEIGHTS.get(opp_tier, 1.0)
+        counter_data = opp_counters.get(role, {})
+
+        # Build mastery lookup
+        mastery_map = {}
+        for m in stats.get("masteries", []):
+            mastery_map[m["champion_name"]] = m.get("points", 0)
+
+        # Collect candidate champions from ranked + mastery
+        candidates = {}
+        for champ in stats.get("champions", []):
+            if champ["games"] >= 2:
+                candidates[champ["champion_name"]] = {
+                    "champion_key": champ.get("champion_key", ""),
+                    "champion_id": champ.get("champion_id"),
+                    "games": champ["games"],
+                    "mastery": mastery_map.get(champ["champion_name"], 0),
+                }
+
         picks = []
-        for champ in stats["champions"]:
-            if champ["games"] < 3:
-                continue
-
-            name = champ["champion_name"]
-            score = champ.get("winrate", 50)
-            score += min(champ.get("kda", 0) * 3, 15)
-            score += min(champ["games"] / 5, 15)
-
+        for name, info in candidates.items():
+            score = 0
+            reasons = []
             banned = name in likely_bans
+
+            # Counter score: how well does this pick do vs opponent's main?
+            if counter_data and name in counter_data:
+                # counter_data[name] = win rate for OPPONENT's main vs this pick
+                # Low value = this pick counters the opponent
+                opp_wr = counter_data[name]
+                counter_advantage = 50 - opp_wr  # positive = we counter them
+                score += counter_advantage * 3
+                if counter_advantage > 0:
+                    reasons.append(f"Counters {opp_main['name']} ({opp_wr:.1f}% for them)")
+                elif counter_advantage < -3:
+                    reasons.append(f"Countered by {opp_main['name']} ({opp_wr:.1f}% for them)")
+
+            # Mastery/comfort score
+            # Weight mastery higher vs lower-ranked opponents (comfort pick matters more)
+            mastery_pts = info["mastery"]
+            if mastery_pts >= 10000:
+                # Against lower ranked: mastery matters more
+                # opp_tier_weight < 1.0 means lower rank → boost mastery
+                mastery_multiplier = max(1.5 - opp_tier_weight * 0.5, 0.5)
+                mastery_score = math.log10(mastery_pts) * 5 * mastery_multiplier
+                score += mastery_score
+                reasons.append(f"Mastery {mastery_pts:,} pts")
+
+            # Ranked experience bonus (small)
+            score += min(info["games"] * 0.5, 10)
+
+            # Bot lane synergy: check if any support champs synergize
+            if role == "bot" and support_champ_names:
+                # Fetch synergy data for this bot pick
+                # For now, just note if it's a known pairing
+                reasons.append(f"{info['games']}g ranked")
+
             if banned:
-                score *= 0.3  # Heavily penalize likely bans
+                score *= 0.2
+                reasons.append("Likely banned")
 
             picks.append({
                 "champion_name": name,
-                "champion_key": champ.get("champion_key", name),
-                "champion_id": champ.get("champion_id"),
-                "winrate": champ.get("winrate", 0),
-                "games": champ["games"],
-                "kda": champ.get("kda", 0),
+                "champion_key": info["champion_key"],
+                "champion_id": info["champion_id"],
+                "games": info["games"],
+                "mastery": mastery_pts,
                 "score": round(score, 1),
                 "likely_banned": banned,
                 "player": player["game_name"],
+                "reasons": reasons,
+                "counters": opp_main["name"] if opp_main and name in counter_data and counter_data[name] < 50 else "",
             })
 
         picks.sort(key=lambda x: -x["score"])

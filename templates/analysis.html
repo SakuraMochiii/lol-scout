@@ -89,12 +89,15 @@
       <div class="pick-info">
         <span class="pick-champ">{{ pick.champion_name }}</span>
         <span class="pick-player muted">{{ pick.player }}</span>
+        {% if pick.reasons %}
+        <div class="pick-reasons">
+          {% for reason in pick.reasons %}
+          <span class="reason-tag {{ 'good' if 'Counters' in reason else 'bad' if 'Countered' in reason else '' }}">{{ reason }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
-      <span class="pick-wr {{ 'good' if pick.winrate >= 55 else 'bad' if pick.winrate < 48 else '' }}">
-        {{ pick.winrate }}% WR
-      </span>
       <span class="pick-games">{{ pick.games }}g</span>
-      <span class="pick-kda">{{ pick.kda }} KDA</span>
       {% if pick.likely_banned %}
       <span class="likely-ban-tag">Likely Banned</span>
       {% endif %}

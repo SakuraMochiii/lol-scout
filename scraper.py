@@ -308,6 +308,59 @@ def scrape_masteries(game_name: str, tag_line: str) -> list[dict]:
     return []
 
 
+_counter_cache = {}  # {champion_key: {opponent_key: win_rate}}
+
+
+def scrape_counters(champion_key: str, position: str = "") -> dict:
+    """
+    Fetch counter matchup data from op.gg for a champion.
+    Returns {opponent_name: win_rate_for_champion} (from the champion's perspective).
+    Low win rate = opponent counters this champion.
+    Cached in memory to avoid re-fetching.
+    """
+    cache_key = f"{champion_key}_{position}"
+    if cache_key in _counter_cache:
+        return _counter_cache[cache_key]
+
+    pos_map = {"top": "top", "jungle": "jungle", "mid": "mid", "bot": "adc", "support": "support"}
+    pos_param = pos_map.get(position, "")
+    url = f"https://op.gg/lol/champions/{quote(champion_key)}/counters"
+    if pos_param:
+        url += f"?position={pos_param}"
+
+    result = {}
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        if resp.status_code != 200:
+            return result
+        text = resp.text
+        idx = text.find('\\"data\\":[{')
+        if idx < 0:
+            return result
+        arr_start = text.index("[", idx)
+        depth = 0
+        for i in range(arr_start, min(arr_start + 200000, len(text))):
+            if text[i] == "[":
+                depth += 1
+            elif text[i] == "]":
+                depth -= 1
+                if depth == 0:
+                    raw = text[arr_start : i + 1].replace('\\"', '"').replace("\\/", "/")
+                    arr = json.loads(raw)
+                    for entry in arr:
+                        opp = entry.get("champion", {})
+                        opp_name = opp.get("name", "")
+                        wr = entry.get("win_rate", 50)
+                        if opp_name:
+                            result[opp_name] = wr
+                    break
+    except Exception:
+        pass
+
+    _counter_cache[cache_key] = result
+    return result
+
+
 UGG_API = "https://u.gg/api"
 UGG_ROLE_MAP = {1: "Jgl", 2: "Sup", 3: "Bot", 4: "Top", 5: "Mid"}
 
