@@ -292,9 +292,62 @@ def scrape_masteries(game_name: str, tag_line: str) -> list[dict]:
     return []
 
 
-def scrape_champions(game_name: str, tag_line: str) -> dict:
+UGG_API = "https://u.gg/api"
+UGG_ROLE_MAP = {1: "Jgl", 2: "Sup", 3: "Bot", 4: "Top", 5: "Mid"}
+
+
+def scrape_champion_roles_ugg(game_name: str, tag_line: str) -> dict:
+    """
+    Fetch per-champion role data from u.gg match history (GraphQL API).
+    Returns {champion_id: "Mid", ...} based on most-played role per champion.
+    """
+    from collections import Counter, defaultdict
+
+    champ_role_counts = defaultdict(Counter)
+
+    page = 1
+    while page <= 10:  # cap at 10 pages
+        query = {
+            "query": f'''query {{ fetchPlayerMatchSummaries(
+                regionId: "na1",
+                riotUserName: "{game_name}",
+                riotTagLine: "{tag_line}",
+                queueType: 420,
+                seasonIds: [26],
+                page: {page}
+            ) {{ matchSummaries {{ championId role }} }} }}'''
+        }
+        try:
+            resp = requests.post(
+                UGG_API, json=query, headers={**HEADERS, "Content-Type": "application/json"}, timeout=15
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if "errors" in data:
+                break
+            matches = data["data"]["fetchPlayerMatchSummaries"]["matchSummaries"]
+            if not matches:
+                break
+            for m in matches:
+                role_name = UGG_ROLE_MAP.get(m["role"], "")
+                if role_name:
+                    champ_role_counts[m["championId"]][role_name] += 1
+            page += 1
+        except Exception:
+            break
+
+    # For each champion, pick the most common role
+    result = {}
+    for cid, roles in champ_role_counts.items():
+        primary = roles.most_common(1)[0][0]
+        result[cid] = primary
+    return result
+
+
+def scrape_champions(game_name: str, tag_line: str, champion_role_map: dict = None) -> dict:
     """
     Fetch champion stats from the op.gg champions page.
+    champion_role_map: optional {champion_id: "Mid"} from u.gg match history.
     Returns season games/wins/losses and champion list.
     """
     slug = f"{game_name}-{tag_line}"
@@ -308,9 +361,6 @@ def scrape_champions(game_name: str, tag_line: str) -> dict:
         "season_winrate": 0,
         "champions": [],
     }
-
-    # Fetch champion role mappings (cached)
-    champion_roles = get_champion_roles()
 
     # Find the champion stats data block
     idx = html.find("my_champion_stats")
@@ -395,10 +445,16 @@ def scrape_champions(game_name: str, tag_line: str) -> dict:
         if not champ_key and image_url:
             champ_key = image_url.split("/")[-1].replace(".png", "")
 
-        # Look up typical role for this champion
         display_name = champ_name or champ_key or f"Champion {champion_id}"
-        roles = champion_roles.get(display_name) or champion_roles.get(champ_key) or []
-        role_str = "/".join(ROLE_SHORT.get(r, r) for r in roles) if roles else ""
+        # Use actual match history role if available, fall back to static data
+        role_str = ""
+        if champion_role_map and champion_id in champion_role_map:
+            role_str = champion_role_map[champion_id]
+        else:
+            # Fallback to Meraki static roles
+            static_roles = get_champion_roles()
+            positions = static_roles.get(display_name) or static_roles.get(champ_key) or []
+            role_str = "/".join(ROLE_SHORT.get(r, r) for r in positions) if positions else ""
 
         result["champions"].append({
             "champion_id": champion_id,
@@ -461,11 +517,24 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     slug = f"{resolved_name}-{resolved_tag}"
     stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
 
-    # Step 2: Fetch history, champions, and masteries in parallel
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    # Step 2: Fetch role data (u.gg), season history, and masteries in parallel
+    # Then fetch champion stats with the role map
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        roles_future = pool.submit(scrape_champion_roles_ugg, resolved_name, resolved_tag)
         history_future = pool.submit(scrape_season_history, resolved_name, resolved_tag)
-        champs_future = pool.submit(scrape_champions, resolved_name, resolved_tag)
         mastery_future = pool.submit(scrape_masteries, resolved_name, resolved_tag)
+
+        # Get role map (non-critical — fallback to static data if fails)
+        champion_role_map = {}
+        try:
+            champion_role_map = roles_future.result(timeout=45)
+        except Exception:
+            pass  # will fall back to Meraki static data
+
+        # Now fetch champions with the role map
+        champs_future = pool.submit(
+            scrape_champions, resolved_name, resolved_tag, champion_role_map
+        )
 
         try:
             history = history_future.result(timeout=30)
