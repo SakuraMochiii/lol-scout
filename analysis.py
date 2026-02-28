@@ -220,16 +220,20 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
         for m in stats.get("masteries", []):
             mastery_map[m["champion_name"]] = m.get("points", 0)
 
-        # Collect candidate champions from ranked + mastery
+        # Collect candidate champions from ranked — only those matching the player's role
         candidates = {}
         for champ in stats.get("champions", []):
-            if champ["games"] >= 2:
-                candidates[champ["champion_name"]] = {
-                    "champion_key": champ.get("champion_key", ""),
-                    "champion_id": champ.get("champion_id"),
-                    "games": champ["games"],
-                    "mastery": mastery_map.get(champ["champion_name"], 0),
-                }
+            if champ["games"] < 2:
+                continue
+            champ_role = champ.get("role", "")
+            if champ_role and not champ_matches_role(champ_role, role):
+                continue  # skip champions played in a different role
+            candidates[champ["champion_name"]] = {
+                "champion_key": champ.get("champion_key", ""),
+                "champion_id": champ.get("champion_id"),
+                "games": champ["games"],
+                "mastery": mastery_map.get(champ["champion_name"], 0),
+            }
 
         picks = []
         for name, info in candidates.items():
