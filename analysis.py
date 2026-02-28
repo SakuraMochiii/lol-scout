@@ -53,45 +53,46 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         tier_weight = TIER_WEIGHTS.get(tier, 1.0)
         pname = player["game_name"]
 
-        # Determine most-picked: #1 champ has 2x+ games of #2
+        # Determine OTP/Main: based on gap between #1 and #2 champion games
+        # OTP: #1 has 20+ games, #2 has <=2 (extremely skewed)
+        # Main: #1 has 10+ games, #2 has <=2 (pretty skewed)
         sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
-        most_picked_name = None
+        otp_name = None
+        main_name = None
         if len(sorted_champs) >= 2:
-            top = sorted_champs[0].get("games", 0)
-            second = sorted_champs[1].get("games", 0)
-            if top >= 10 and (second == 0 or top / max(second, 1) >= 2):
-                most_picked_name = sorted_champs[0]["champion_name"]
+            top_games = sorted_champs[0].get("games", 0)
+            second_games = sorted_champs[1].get("games", 0)
+            if top_games >= 20 and second_games <= 2:
+                otp_name = sorted_champs[0]["champion_name"]
+            elif top_games >= 10 and second_games <= 2:
+                main_name = sorted_champs[0]["champion_name"]
         elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
-            most_picked_name = sorted_champs[0]["champion_name"]
+            otp_name = sorted_champs[0]["champion_name"]
 
         for champ in stats["champions"][:10]:
             key = champ["champion_name"]
             games = champ.get("games", 0)
             winrate = champ.get("winrate", 0)
             kda = champ.get("kda", 0)
-            games_pct = games / total_games if total_games > 0 else 0
 
             entry = champ_scores[key]
             entry["champion_key"] = champ.get("champion_key", key)
             entry["champion_id"] = champ.get("champion_id")
 
-            # One-trick / most-picked detection
-            is_otp = games_pct >= 0.40
-            is_most_picked = key == most_picked_name and not is_otp
-
-            if is_otp:
-                score = 40 + (games_pct - 0.40) * 100
+            # OTP / Main detection for ban scoring
+            if key == otp_name:
+                second_g = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
+                score = 50 + (games - second_g) * 0.5
                 entry["score"] += score * tier_weight
                 entry["reasons"].append(
-                    f"One-trick: {pname} ({games}g, {winrate:.0f}% WR, "
-                    f"{games_pct * 100:.0f}% of games)"
+                    f"One-trick: {pname} ({games}g, next most played {second_g}g, {winrate:.0f}% WR)"
                 )
-            elif is_most_picked:
-                second_games = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
-                score = 25 + (games - second_games) * 0.3
+            elif key == main_name:
+                second_g = sorted_champs[1].get("games", 0) if len(sorted_champs) > 1 else 0
+                score = 30 + (games - second_g) * 0.3
                 entry["score"] += score * tier_weight
                 entry["reasons"].append(
-                    f"Most picked: {pname} ({games}g vs {second_games}g next, {winrate:.0f}% WR)"
+                    f"Main: {pname} ({games}g, next most played {second_g}g, {winrate:.0f}% WR)"
                 )
 
             # High winrate comfort
@@ -196,56 +197,42 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
     return picks_by_role
 
 
-def identify_one_tricks(team: dict, threshold: float = 0.40) -> list[dict]:
-    """Find players who are one-tricks or have a clear most-picked champion."""
+def identify_one_tricks(team: dict) -> list[dict]:
+    """
+    Find players with extremely skewed champion pools.
+    OTP: #1 has 20+ games, #2 has <=2 games
+    Main: #1 has 10+ games, #2 has <=2 games
+    """
     results = []
     for player in team.get("players", []):
         stats = player.get("stats")
         if not stats or not stats.get("champions"):
             continue
-        total = stats.get("season_games") or sum(
-            c["games"] for c in stats["champions"]
-        )
-        if total == 0:
-            continue
 
         sorted_champs = sorted(stats["champions"], key=lambda c: -c.get("games", 0))
+        if not sorted_champs:
+            continue
 
-        # Check for OTP (40%+ of games)
-        for champ in sorted_champs[:3]:
-            pct = champ["games"] / total
-            if pct >= threshold:
-                results.append({
-                    "player": player["game_name"],
-                    "role": player.get("role", "?"),
-                    "champion": champ["champion_name"],
-                    "champion_key": champ.get("champion_key", ""),
-                    "games": champ["games"],
-                    "pct": round(pct * 100, 1),
-                    "winrate": champ.get("winrate", 0),
-                    "tag": "OTP",
-                })
+        top = sorted_champs[0]
+        top_games = top.get("games", 0)
+        second_games = sorted_champs[1].get("games", 0) if len(sorted_champs) >= 2 else 0
+        total = stats.get("season_games") or sum(c["games"] for c in stats["champions"])
 
-        # Check for most-picked (2x+ games over #2, not already flagged as OTP)
-        if len(sorted_champs) >= 2:
-            top = sorted_champs[0]
-            second = sorted_champs[1]
-            top_games = top.get("games", 0)
-            second_games = second.get("games", 0)
-            top_pct = top_games / total
-            if (
-                top_games >= 10
-                and (second_games == 0 or top_games / max(second_games, 1) >= 2)
-                and top_pct < threshold  # not already an OTP
-            ):
-                results.append({
-                    "player": player["game_name"],
-                    "role": player.get("role", "?"),
-                    "champion": top["champion_name"],
-                    "champion_key": top.get("champion_key", ""),
-                    "games": top_games,
-                    "pct": round(top_pct * 100, 1),
-                    "winrate": top.get("winrate", 0),
-                    "tag": "Most Picked",
-                })
+        if top_games >= 20 and second_games <= 2:
+            tag = "OTP"
+        elif top_games >= 10 and second_games <= 2:
+            tag = "MAIN"
+        else:
+            continue
+
+        results.append({
+            "player": player["game_name"],
+            "role": player.get("role", "?"),
+            "champion": top["champion_name"],
+            "champion_key": top.get("champion_key", ""),
+            "games": top_games,
+            "pct": round(top_games / max(total, 1) * 100, 1),
+            "winrate": top.get("winrate", 0),
+            "tag": tag,
+        })
     return results

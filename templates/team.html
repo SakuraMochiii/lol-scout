@@ -112,10 +112,15 @@
               {% if champ.role %}
               <span class="champ-role-tag">{{ champ.role }}</span>
               {% endif %}
-              {% if stats.season_games and champ.games / stats.season_games >= 0.40 %}
+              {% if loop.index == 1 and stats.champions|length >= 2 %}
+              {% set second_games = stats.champions[1].games %}
+              {% if champ.games >= 20 and second_games <= 2 %}
               <span class="otp-badge">OTP</span>
-              {% elif loop.index == 1 and stats.champions|length >= 2 and champ.games >= 10 and champ.games >= stats.champions[1].games * 2 %}
+              {% elif champ.games >= 10 and second_games <= 2 %}
               <span class="main-badge">MAIN</span>
+              {% endif %}
+              {% elif loop.index == 1 and stats.champions|length == 1 and champ.games >= 10 %}
+              <span class="otp-badge">OTP</span>
               {% endif %}
             </div>
             <span class="champ-games">{{ champ.games }}g</span>
