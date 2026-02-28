@@ -1,5 +1,6 @@
 """Flask app for LoL Tournament Scout."""
 
+import threading
 import time
 from pathlib import Path
 
@@ -8,6 +9,9 @@ from flask import Flask, jsonify, redirect, render_template, request, url_for
 import analysis
 import scraper
 import storage
+
+# Track background refresh jobs: {team_id: {status, results, total, done}}
+_refresh_jobs = {}
 
 app = Flask(__name__)
 
@@ -233,6 +237,24 @@ def api_refresh_player(player_id):
         return jsonify({"error": str(e)}), 500
 
 
+def _refresh_team_worker(team_id, players):
+    """Background worker that refreshes each player on a team."""
+    job = _refresh_jobs[team_id]
+    for player in players:
+        job["current"] = player["game_name"]
+        try:
+            data = storage.load()
+            stats = scraper.scrape_player(player["game_name"], player["tag_line"])
+            storage.update_player(data, player["id"], stats=stats)
+            job["results"].append({"player": player["game_name"], "success": True})
+        except Exception as e:
+            job["results"].append({"player": player["game_name"], "success": False, "error": str(e)})
+        job["done"] += 1
+        time.sleep(0.5)
+    job["status"] = "complete"
+    job["current"] = None
+
+
 @app.route("/api/teams/<team_id>/refresh", methods=["POST"])
 def api_refresh_team(team_id):
     data = storage.load()
@@ -240,17 +262,34 @@ def api_refresh_team(team_id):
     if not team:
         return jsonify({"error": "Team not found"}), 404
 
-    results = []
-    for player in team["players"]:
-        try:
-            stats = scraper.scrape_player(player["game_name"], player["tag_line"])
-            storage.update_player(data, player["id"], stats=stats)
-            results.append({"player": player["game_name"], "success": True})
-        except Exception as e:
-            results.append({"player": player["game_name"], "success": False, "error": str(e)})
-        time.sleep(0.5)  # Brief delay between players
+    # Don't start a new job if one is already running
+    if team_id in _refresh_jobs and _refresh_jobs[team_id]["status"] == "running":
+        return jsonify({"success": True, "status": "already_running"})
 
-    return jsonify({"success": True, "results": results})
+    _refresh_jobs[team_id] = {
+        "status": "running",
+        "results": [],
+        "total": len(team["players"]),
+        "done": 0,
+        "current": None,
+    }
+
+    thread = threading.Thread(
+        target=_refresh_team_worker,
+        args=(team_id, list(team["players"])),
+        daemon=True,
+    )
+    thread.start()
+
+    return jsonify({"success": True, "status": "started", "total": len(team["players"])})
+
+
+@app.route("/api/teams/<team_id>/refresh/status", methods=["GET"])
+def api_refresh_status(team_id):
+    job = _refresh_jobs.get(team_id)
+    if not job:
+        return jsonify({"status": "none"})
+    return jsonify(job)
 
 
 @app.route("/api/import/multi-link", methods=["POST"])

@@ -35,25 +35,53 @@ async function refreshPlayer(playerId, btn) {
 async function refreshTeam(teamId) {
   const status = document.getElementById('refresh-status');
   status.style.display = 'block';
-  status.textContent = 'Refreshing all players... This may take a moment.';
+  status.textContent = 'Starting refresh...';
 
   try {
     const res = await fetch(`/api/teams/${teamId}/refresh`, { method: 'POST' });
     const data = await res.json();
-    if (data.success) {
-      const results = data.results || [];
-      const failed = results.filter(r => !r.success);
-      if (failed.length > 0) {
-        status.textContent = `Done. ${failed.length} player(s) failed: ${failed.map(f => f.player).join(', ')}`;
-      } else {
-        status.textContent = 'All players refreshed.';
-      }
-      setTimeout(() => location.reload(), 1500);
-    } else {
+    if (!data.success) {
       status.textContent = 'Refresh failed: ' + (data.error || 'Unknown error');
+      return;
     }
+    if (data.status === 'already_running') {
+      status.textContent = 'Refresh already in progress...';
+    }
+    // Poll for progress
+    pollRefreshStatus(teamId);
   } catch (e) {
     status.textContent = 'Network error: ' + e.message;
+  }
+}
+
+async function pollRefreshStatus(teamId) {
+  const status = document.getElementById('refresh-status');
+  try {
+    const res = await fetch(`/api/teams/${teamId}/refresh/status`);
+    const job = await res.json();
+    if (job.status === 'none') {
+      status.textContent = 'No refresh job found.';
+      return;
+    }
+    const pct = job.total > 0 ? Math.round(job.done / job.total * 100) : 0;
+    const current = job.current ? ` — ${job.current}` : '';
+    status.textContent = `Refreshing ${job.done}/${job.total} (${pct}%)${current}`;
+
+    if (job.status === 'complete') {
+      const failed = (job.results || []).filter(r => !r.success);
+      if (failed.length > 0) {
+        status.textContent = `Done. ${failed.length} failed: ${failed.map(f => f.player).join(', ')}`;
+      } else {
+        status.textContent = `All ${job.total} players refreshed.`;
+      }
+      setTimeout(() => location.reload(), 1500);
+      return;
+    }
+    // Poll again in 2 seconds
+    setTimeout(() => pollRefreshStatus(teamId), 2000);
+  } catch (e) {
+    // Network error during poll — retry
+    setTimeout(() => pollRefreshStatus(teamId), 3000);
   }
 }
 
