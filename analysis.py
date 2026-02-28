@@ -24,8 +24,11 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
     Analyze opponent team and return scored ban recommendations.
 
     Priority: high-ranked players' most played champions.
-    OTP status gives a slight bonus but rank matters more.
+    Ranked games are the primary signal, mastery is a bonus but only
+    for champions matching the player's assigned tournament role.
     """
+    import math
+
     champ_scores = defaultdict(lambda: {
         "score": 0.0,
         "reasons": [],
@@ -33,6 +36,25 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         "champion_key": "",
         "champion_id": None,
     })
+
+    # Role name normalization for matching
+    role_aliases = {
+        "top": {"top", "Top"},
+        "jungle": {"jgl", "Jgl", "jungle", "Jungle"},
+        "mid": {"mid", "Mid", "middle", "Middle"},
+        "bot": {"bot", "Bot", "adc", "ADC", "bottom", "Bottom"},
+        "support": {"sup", "Sup", "support", "Support"},
+    }
+
+    def champ_matches_role(champ_role_str, player_role):
+        """Check if a champion's role matches the player's assigned role."""
+        if not champ_role_str or not player_role or player_role == "fill":
+            return True  # no role info or fill = always matches
+        aliases = role_aliases.get(player_role, {player_role})
+        for part in champ_role_str.split("/"):
+            if part.strip() in aliases:
+                return True
+        return False
 
     for player in opponent_team.get("players", []):
         stats = player.get("stats")
@@ -42,8 +64,9 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         tier = stats.get("tier", "UNRANKED")
         tier_weight = TIER_WEIGHTS.get(tier, 1.0)
         pname = player["game_name"]
+        player_role = player.get("role", "fill")
 
-        # Build mastery lookup: champion_name → {level, points}
+        # Build mastery lookup: champion_name → {level, points, ...}
         mastery_map = {}
         for m in stats.get("masteries", []):
             mastery_map[m["champion_name"]] = {
@@ -52,7 +75,7 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
                 "champion_key": m.get("champion_key", ""),
             }
 
-        # Detect OTP/Main for labeling
+        # Detect OTP/Main
         sorted_champs = sorted(stats.get("champions", []), key=lambda c: -c.get("games", 0))
         otp_name = None
         main_name = None
@@ -67,55 +90,44 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
         elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
             otp_name = sorted_champs[0]["champion_name"]
 
-        # Score by mastery (primary) — high mastery on high-ranked players
-        scored_champs = set()
-        for m_name, m_data in mastery_map.items():
-            level = m_data["level"]
-            points = m_data["points"]
-            if points < 10000:
-                continue  # skip low mastery
-
-            entry = champ_scores[m_name]
-            if not entry["champion_key"] and m_data["champion_key"]:
-                entry["champion_key"] = m_data["champion_key"]
-
-            # Mastery score: log-scaled points × rank weight
-            # 100k points ≈ 50, 500k ≈ 57, 1M ≈ 60 (diminishing returns)
-            import math
-            mastery_score = math.log10(max(points, 1)) * 10 * tier_weight
-
-            reasons = []
-            reasons.append(f"{pname} ({tier.capitalize()}, Lvl {level}, {points:,} pts)")
-
-            # Small OTP bonus
-            if m_name == otp_name:
-                mastery_score *= 1.15
-                reasons.append("OTP")
-            elif m_name == main_name:
-                mastery_score *= 1.1
-                reasons.append("Main")
-
-            entry["score"] += mastery_score
-            entry["reasons"].extend(reasons)
-            entry["players"].append(pname)
-            scored_champs.add(m_name)
-
-        # Also include ranked champions not in mastery (fallback)
-        for champ in stats.get("champions", [])[:5]:
+        # Primary: score by ranked games × rank weight
+        for i, champ in enumerate(stats.get("champions", [])[:10]):
             key = champ["champion_name"]
-            if key in scored_champs:
-                continue
             games = champ.get("games", 0)
-            if games < 5:
+            if games < 3:
                 continue
 
             entry = champ_scores[key]
             entry["champion_key"] = champ.get("champion_key", key)
             entry["champion_id"] = champ.get("champion_id")
 
-            score = games * tier_weight * 0.5  # lower weight than mastery
+            # Ranked games score
+            score = games * tier_weight
+            if i == 0:
+                score *= 1.5
+            elif i == 1:
+                score *= 1.2
+
+            reasons = [f"{pname} ({tier.capitalize()}, {games}g)"]
+
+            # Mastery bonus: only if champion fits the player's tournament role
+            champ_role = champ.get("role", "")
+            m_data = mastery_map.get(key)
+            if m_data and m_data["points"] >= 10000 and champ_matches_role(champ_role, player_role):
+                mastery_bonus = math.log10(max(m_data["points"], 1)) * 5 * tier_weight
+                score += mastery_bonus
+                reasons.append(f"Mastery Lvl {m_data['level']}, {m_data['points']:,} pts")
+
+            # Small OTP/Main bonus
+            if key == otp_name:
+                score *= 1.15
+                reasons.append("OTP")
+            elif key == main_name:
+                score *= 1.1
+                reasons.append("Main")
+
             entry["score"] += score
-            entry["reasons"].append(f"{pname} ({tier.capitalize()}, {games}g ranked)")
+            entry["reasons"].extend(reasons)
             entry["players"].append(pname)
 
     results = []
