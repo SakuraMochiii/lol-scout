@@ -413,8 +413,16 @@ def scrape_champions(game_name: str, tag_line: str, champion_role_map: dict = No
                 arr_end = i + 1
                 break
 
-    # Unescape the extracted array, then parse
-    arr_text = html[arr_start:arr_end].replace('\\"', '"')
+    # Unescape the extracted array, then parse.
+    # RSC payloads use JS string escaping: \\" → ", \\/ → /, \\\\ → \, \\n → newline, etc.
+    raw = html[arr_start:arr_end]
+    try:
+        # Use codecs.decode which handles standard escape sequences
+        import codecs
+        arr_text = codecs.decode(raw, "unicode_escape")
+    except (UnicodeDecodeError, ValueError):
+        # Fallback to manual replacement
+        arr_text = raw.replace('\\\\"', '__DBLQUOTE__').replace('\\"', '"').replace('__DBLQUOTE__', '\\"').replace('\\/', '/')
     try:
         champ_list = json.loads(arr_text)
     except json.JSONDecodeError:

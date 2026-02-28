@@ -3,10 +3,12 @@
 import json
 import os
 import secrets
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "data" / "tournament.json"
+_lock = threading.Lock()
 
 
 def generate_id() -> str:
@@ -25,20 +27,22 @@ def default_tournament() -> dict:
 
 
 def load() -> dict:
-    if not DATA_FILE.exists():
-        data = default_tournament()
-        save(data)
-        return data
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
+    with _lock:
+        if not DATA_FILE.exists():
+            data = default_tournament()
+            save(data)
+            return data
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
 
 
 def save(data: dict) -> None:
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    tmp = str(DATA_FILE) + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(data, f, indent=2)
-    os.replace(tmp, DATA_FILE)
+    with _lock:
+        DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = str(DATA_FILE) + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp, DATA_FILE)
 
 
 def get_team(data: dict, team_id: str) -> dict | None:
