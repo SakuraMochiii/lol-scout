@@ -66,6 +66,16 @@ def manage():
 # --- API routes ---
 
 
+@app.route("/api/season", methods=["PUT"])
+def api_update_season():
+    data = storage.load()
+    body = request.json
+    if "season_name" in body:
+        data["meta"]["season_name"] = body["season_name"].strip()
+    storage.save(data)
+    return jsonify({"success": True})
+
+
 @app.route("/api/teams", methods=["POST"])
 def api_create_team():
     data = storage.load()
@@ -120,6 +130,14 @@ def api_create_player():
         return jsonify({"error": "Player input required"}), 400
 
     parsed = scraper.parse_player_input(player_input)
+
+    # Overwrite mode: clear existing players before adding new ones
+    if body.get("overwrite"):
+        team = storage.get_team(data, team_id)
+        if team:
+            team["players"] = []
+            storage.save(data)
+
     added = []
     for game_name, tag_line in parsed:
         player = storage.add_player(data, team_id, game_name, tag_line, role, is_sub)
@@ -163,6 +181,22 @@ def api_update_player(player_id):
                 stats["season_wins"] / stats["season_games"] * 100, 1
             )
         updates["stats"] = stats
+
+    # Extra fields (previous_season_tier, peak_tier) — merge into existing stats
+    if "extra" in body:
+        _, player_obj = storage.get_player(data, player_id)
+        if player_obj:
+            if not player_obj.get("stats"):
+                player_obj["stats"] = {
+                    "last_updated": None, "tier": "UNRANKED", "division": None,
+                    "lp": 0, "season_games": 0, "season_wins": 0,
+                    "season_losses": 0, "season_winrate": 0, "champions": [],
+                    "scrape_error": None, "opgg_url": None,
+                    "previous_season_tier": None, "peak_tier": None,
+                }
+            for k, v in body["extra"].items():
+                player_obj["stats"][k] = v if v else None
+            storage.save(data)
 
     player = storage.update_player(data, player_id, **updates)
     if not player:

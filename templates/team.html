@@ -84,7 +84,19 @@
       <p class="muted">No champion data available.</p>
       {% endif %}
 
+      {% if stats and stats.previous_season_tier %}
+      <div class="extra-ranks">
+        <span class="muted">Last Season: <strong>{{ stats.previous_season_tier }}</strong></span>
+        {% if stats.peak_tier %}
+        <span class="muted">Peak: <strong>{{ stats.peak_tier }}</strong></span>
+        {% endif %}
+      </div>
+      {% endif %}
+
       <div class="player-footer">
+        {% if stats and stats.opgg_url %}
+        <a href="{{ stats.opgg_url }}" target="_blank" rel="noopener" class="btn btn-sm">op.gg</a>
+        {% endif %}
         {% if stats %}
         <span class="muted">Updated: {{ stats.last_updated[:16].replace('T', ' ') }}</span>
         {% endif %}
@@ -141,6 +153,9 @@
       <p class="muted">No data yet.</p>
       {% endif %}
       <div class="player-footer">
+        {% if stats and stats.opgg_url %}
+        <a href="{{ stats.opgg_url }}" target="_blank" rel="noopener" class="btn btn-sm">op.gg</a>
+        {% endif %}
         <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
         <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
       </div>

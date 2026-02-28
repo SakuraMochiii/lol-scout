@@ -99,6 +99,20 @@ async function deleteTeam(teamId, teamName) {
   }
 }
 
+async function renameTeam(teamId, newName) {
+  newName = newName.trim();
+  if (!newName) return;
+  try {
+    await fetch(`/api/teams/${teamId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName }),
+    });
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+}
+
 async function setMyTeam(teamId) {
   try {
     const res = await fetch(`/api/teams/${teamId}`, {
@@ -117,6 +131,7 @@ async function addPlayer(teamId) {
   const input = document.querySelector(`.player-input[data-team="${teamId}"]`);
   const roleSelect = document.querySelector(`.role-select[data-team="${teamId}"]`);
   const subCheck = document.querySelector(`.sub-check[data-team="${teamId}"]`);
+  const overwriteCheck = document.querySelector(`.overwrite-check[data-team="${teamId}"]`);
 
   const playerInput = input.value.trim();
   if (!playerInput) return;
@@ -130,6 +145,7 @@ async function addPlayer(teamId) {
         player_input: playerInput,
         role: roleSelect.value,
         is_substitute: subCheck.checked,
+        overwrite: overwriteCheck.checked,
       }),
     });
     const data = await res.json();
@@ -139,6 +155,18 @@ async function addPlayer(teamId) {
     } else {
       alert('Failed: ' + (data.error || 'Unknown error'));
     }
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+}
+
+async function updatePlayerExtra(playerId, field, value) {
+  try {
+    await fetch(`/api/players/${playerId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ extra: { [field]: value } }),
+    });
   } catch (e) {
     alert('Network error: ' + e.message);
   }
@@ -159,9 +187,8 @@ async function updatePlayerRole(playerId, role) {
 async function updateSeason() {
   const name = document.getElementById('season-name').value.trim();
   if (!name) return;
-  // Use first team to set season name (it's a meta field)
   try {
-    const res = await fetch('/api/teams/' + (document.querySelector('.manage-team-row')?.dataset.team || ''), {
+    const res = await fetch('/api/season', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ season_name: name }),

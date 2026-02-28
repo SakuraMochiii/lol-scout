@@ -209,6 +209,7 @@ h2 { font-size: 16px; }
 .expand-arrow.open { transform: rotate(180deg); }
 
 .player-body { padding: 0 16px 16px; }
+.extra-ranks { display: flex; gap: 16px; margin-top: 8px; padding: 6px 10px; background: var(--bg); border-radius: 4px; font-size: 13px; }
 .player-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 
 /* Champion list */
@@ -374,6 +375,7 @@ h2 { font-size: 16px; }
   padding: 16px;
 }
 .manage-team-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.team-name-input { font-weight: 600; font-size: 15px; width: 200px; }
 .add-player-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
 .add-player-form .input { flex: 1; min-width: 200px; }
 .sub-checkbox { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; cursor: pointer; }

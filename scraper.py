@@ -4,7 +4,7 @@ import json
 import re
 import time
 from datetime import datetime, timezone
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlparse
 
 import requests
 
@@ -20,7 +20,6 @@ HEADERS = {
 TIMEOUT = 15
 MAX_RETRIES = 3
 RETRY_DELAYS = [1, 2, 4]
-REQUEST_DELAY = 2  # seconds between requests
 
 _ddragon_version_cache = {"version": None, "fetched_at": 0}
 
@@ -49,187 +48,190 @@ def _fetch(url: str) -> str:
     raise ScrapeError(f"Failed after {MAX_RETRIES} attempts: {last_error}")
 
 
-def _extract_rsc_data(html: str) -> str:
-    """Extract Next.js RSC push data from op.gg HTML."""
-    pushes = re.findall(
-        r'self\.__next_f\.push\(\[1,"(.*?)"\]\)',
-        html,
-        re.DOTALL,
-    )
-    if not pushes:
-        # Try alternative pattern
-        pushes = re.findall(
-            r'self\.__next_f\.push\(\[1,\s*"(.*?)"\s*\]\)',
-            html,
-            re.DOTALL,
-        )
-    # Unescape the strings
-    combined = []
-    for p in pushes:
-        try:
-            unescaped = p.encode().decode("unicode_escape")
-        except (UnicodeDecodeError, ValueError):
-            unescaped = p
-        combined.append(unescaped)
-    return "\n".join(combined)
-
-
-def _find_json_objects(text: str, key: str) -> list[dict]:
-    """Find JSON objects in text that contain a specific key."""
-    results = []
-    pattern = re.compile(re.escape(f'"{key}"'))
-    for match in pattern.finditer(text):
-        # Walk backwards to find opening brace
-        start = match.start()
-        depth = 0
-        obj_start = None
-        for i in range(start, -1, -1):
-            if text[i] == "}":
-                depth += 1
-            elif text[i] == "{":
-                if depth == 0:
-                    obj_start = i
-                    break
-                depth -= 1
-        if obj_start is None:
+def _extract_json_object_at(text: str, start: int) -> dict | None:
+    """Extract a JSON object starting from a { in text."""
+    if start < 0 or start >= len(text) or text[start] != "{":
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escape:
+            escape = False
             continue
-        # Walk forward to find closing brace
-        depth = 0
-        for i in range(obj_start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
-                if depth == 0:
-                    try:
-                        obj = json.loads(text[obj_start : i + 1])
-                        results.append(obj)
-                    except json.JSONDecodeError:
-                        pass
-                    break
-    return results
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"' and not escape:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start : i + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
 
 
-def scrape_player(game_name: str, tag_line: str) -> dict:
-    """Scrape a player's ranked stats and champion pool from op.gg."""
-    slug = f"{game_name}-{tag_line}"
-    stats = {
-        "last_updated": datetime.now(timezone.utc).isoformat(),
+def _unescape_rsc(text: str) -> str:
+    """Unescape double-escaped JSON from RSC payloads."""
+    return text.replace('\\"', '"').replace("\\\\/", "/").replace("\\\\n", "\n")
+
+
+def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
+    """
+    Fetch tier/rank data from the op.gg multisearch page.
+    Also extracts the real game_name, tagline, and internal_name for use
+    in subsequent page fetches (the user-provided tag may be wrong).
+    """
+    url = f"https://op.gg/lol/multisearch/na?summoners={quote(game_name)}"
+    html = _fetch(url)
+
+    result = {
         "tier": "UNRANKED",
         "division": None,
         "lp": 0,
+        "resolved_name": None,
+        "resolved_tag": None,
+        "internal_name": None,
+    }
+
+    # The multisearch returns multiple summoner objects as search results.
+    # We need to find the one matching our game_name (case-insensitive).
+    # Data is double-escaped in RSC payloads.
+    clean = html.replace('\\"', '"').replace("\\\\/", "/")
+
+    # Find the data array with summoner objects
+    data_idx = clean.find('"data":[{"id"')
+    if data_idx < 0:
+        return result
+
+    # Extract individual summoner blocks by splitting on },{ patterns
+    # Each has game_name, tagline, solo_tier_info
+    target = game_name.lower()
+    for m in re.finditer(
+        r'"game_name"\s*:\s*"([^"]+)"\s*,\s*"tagline"\s*:\s*"([^"]+)"',
+        clean[data_idx:],
+    ):
+        found_name = m.group(1)
+        found_tag = m.group(2)
+
+        # Match by game_name (case-insensitive)
+        if found_name.lower() != target:
+            continue
+
+        result["resolved_name"] = found_name
+        result["resolved_tag"] = found_tag
+
+        # Look for solo_tier_info after this match
+        after = clean[data_idx + m.end() : data_idx + m.end() + 1000]
+        tier_match = re.search(
+            r'"solo_tier_info"\s*:\s*\{\s*"tier"\s*:\s*"(\w+)"\s*,\s*"division"\s*:\s*(\d+)\s*,\s*"lp"\s*:\s*(\d+)',
+            after,
+        )
+        if tier_match:
+            result["tier"] = tier_match.group(1)
+            result["division"] = int(tier_match.group(2))
+            result["lp"] = int(tier_match.group(3))
+
+        # Get internal_name
+        iname_match = re.search(r'"internal_name"\s*:\s*"([^"]+)"', after)
+        if iname_match:
+            result["internal_name"] = iname_match.group(1)
+
+        break
+
+    return result
+
+
+def scrape_champions(game_name: str, tag_line: str) -> dict:
+    """
+    Fetch champion stats from the op.gg champions page.
+    Returns season games/wins/losses and champion list.
+    """
+    slug = f"{game_name}-{tag_line}"
+    url = f"https://op.gg/lol/summoners/na/{quote(slug)}/champions"
+    html = _fetch(url)
+
+    result = {
         "season_games": 0,
         "season_wins": 0,
         "season_losses": 0,
         "season_winrate": 0,
         "champions": [],
-        "scrape_error": None,
     }
 
-    # Fetch profile page
-    try:
-        profile_html = _fetch(f"https://www.op.gg/summoners/na/{slug}")
-    except ScrapeError as e:
-        stats["scrape_error"] = str(e)
-        return stats
+    # Find the champion stats data block
+    idx = html.find("my_champion_stats")
+    if idx < 0:
+        return result
 
-    rsc = _extract_rsc_data(profile_html)
-
-    # Parse tier info from RSC data
-    tier_match = re.search(
-        r'"tier"\s*:\s*"(\w+)"\s*,\s*"division"\s*:\s*(\d+)\s*,\s*"lp"\s*:\s*(\d+)',
-        rsc,
+    # Extract season totals from the area before my_champion_stats
+    search_start = max(0, idx - 500)
+    header = _unescape_rsc(html[search_start:idx])
+    season_match = re.search(
+        r'"game_type"\s*:\s*"RANKED"[^}]*?"play"\s*:\s*(\d+)\s*,\s*"win"\s*:\s*(\d+)\s*,\s*"lose"\s*:\s*(\d+)',
+        header,
     )
-    if tier_match:
-        stats["tier"] = tier_match.group(1)
-        stats["division"] = int(tier_match.group(2))
-        stats["lp"] = int(tier_match.group(3))
-
-    # Also try to extract from the HTML directly as fallback
-    if stats["tier"] == "UNRANKED":
-        tier_html = re.search(
-            r'<div[^>]*class="[^"]*tier[^"]*"[^>]*>(\w+)</div>', profile_html
-        )
-        if tier_html:
-            stats["tier"] = tier_html.group(1).upper()
-
-    # Parse win/loss from profile page
-    wl_match = re.search(r'"wins"\s*:\s*(\d+)\s*,\s*"losses"\s*:\s*(\d+)', rsc)
-    if wl_match:
-        stats["season_wins"] = int(wl_match.group(1))
-        stats["season_losses"] = int(wl_match.group(2))
-        stats["season_games"] = stats["season_wins"] + stats["season_losses"]
-        if stats["season_games"] > 0:
-            stats["season_winrate"] = round(
-                stats["season_wins"] / stats["season_games"] * 100, 1
+    if season_match:
+        result["season_games"] = int(season_match.group(1))
+        result["season_wins"] = int(season_match.group(2))
+        result["season_losses"] = int(season_match.group(3))
+        if result["season_games"] > 0:
+            result["season_winrate"] = round(
+                result["season_wins"] / result["season_games"] * 100, 1
             )
 
-    # Fetch champions page
-    time.sleep(REQUEST_DELAY)
+    # Extract my_champion_stats array from RAW text (before unescaping).
+    # The data is double-escaped (\\" for quotes), so brackets [] are never
+    # inside string literals — simple depth counting works on raw text.
+    raw_marker = html.find('my_champion_stats\\":[', max(0, idx - 50))
+    if raw_marker < 0:
+        raw_marker = html.find('"my_champion_stats":[', max(0, idx - 50))
+    if raw_marker < 0:
+        return result
+
+    arr_start = html.index("[", raw_marker)
+    depth = 0
+    arr_end = arr_start
+    for i in range(arr_start, min(arr_start + 500000, len(html))):
+        if html[i] == "[":
+            depth += 1
+        elif html[i] == "]":
+            depth -= 1
+            if depth == 0:
+                arr_end = i + 1
+                break
+
+    # Unescape the extracted array, then parse
+    arr_text = html[arr_start:arr_end].replace('\\"', '"')
     try:
-        champ_html = _fetch(f"https://www.op.gg/summoners/na/{slug}/champions")
-    except ScrapeError as e:
-        stats["scrape_error"] = f"Profile OK, champions page failed: {e}"
-        return stats
+        champ_list = json.loads(arr_text)
+    except json.JSONDecodeError:
+        return result
 
-    champ_rsc = _extract_rsc_data(champ_html)
-
-    # Parse champion stats
-    # Look for champion stat objects with play/win/lose fields
-    champ_entries = []
-
-    # Try to find my_champion_stats array
-    champ_array_match = re.search(
-        r'"my_champion_stats"\s*:\s*\[', champ_rsc
-    )
-    if champ_array_match:
-        start = champ_array_match.start()
-        # Find the opening bracket
-        bracket_pos = champ_rsc.index("[", start)
-        depth = 0
-        end = bracket_pos
-        for i in range(bracket_pos, len(champ_rsc)):
-            if champ_rsc[i] == "[":
-                depth += 1
-            elif champ_rsc[i] == "]":
-                depth -= 1
-                if depth == 0:
-                    end = i + 1
-                    break
-        try:
-            champ_list = json.loads(champ_rsc[bracket_pos:end])
-            for c in champ_list:
-                if isinstance(c, dict) and "play" in c:
-                    champ_entries.append(c)
-        except json.JSONDecodeError:
-            pass
-
-    # Fallback: search for individual champion stat objects
-    if not champ_entries:
-        for obj in _find_json_objects(champ_rsc, "champion_id"):
-            if "play" in obj and "win" in obj:
-                champ_entries.append(obj)
-
-    # Also try HTML page directly for champion data
-    if not champ_entries:
-        for obj in _find_json_objects(champ_html, "champion_id"):
-            if "play" in obj and "win" in obj:
-                champ_entries.append(obj)
-
-    # Deduplicate by champion_id and build clean champion list
-    seen = set()
-    for c in champ_entries:
-        cid = c.get("champion_id") or c.get("id")
-        if not cid or cid in seen:
+    for c in champ_list:
+        if not isinstance(c, dict) or "play" not in c:
             continue
-        seen.add(cid)
+
+        # Skip the aggregate entry (idx=0, id=0) — it's the "all champions" summary
+        champion_id = c.get("champion_id") or c.get("id", 0)
+        if champion_id == 0:
+            continue
 
         games = c.get("play", 0)
         wins = c.get("win", 0)
         losses = c.get("lose", 0)
-        winrate = c.get("win_rate") or (
-            round(wins / games * 100, 1) if games > 0 else 0
-        )
+        winrate = c.get("win_rate", 0)
+        if winrate == 0 and games > 0:
+            winrate = round(wins / games * 100, 1)
 
         kda_obj = c.get("kda", {})
         if isinstance(kda_obj, dict):
@@ -241,14 +243,18 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
             kda = float(kda_obj) if kda_obj else 0
             avg_kills = avg_deaths = avg_assists = 0
 
-        # Champion name/key
-        champ_name = c.get("name", f"Champion {cid}")
-        champ_key = c.get("key") or c.get("image_url", "").split("/")[-1].replace(".png", "") or champ_name
+        # Champion name/key from op.gg data
+        champ_name = c.get("name", "")
+        # Extract key from image_url (e.g. ".../champion/Ekko.png" -> "Ekko")
+        image_url = c.get("image_url", "")
+        champ_key = c.get("key", "")
+        if not champ_key and image_url:
+            champ_key = image_url.split("/")[-1].replace(".png", "")
 
-        stats["champions"].append({
-            "champion_id": cid,
-            "champion_name": champ_name,
-            "champion_key": champ_key,
+        result["champions"].append({
+            "champion_id": champion_id,
+            "champion_name": champ_name or champ_key or f"Champion {champion_id}",
+            "champion_key": champ_key or champ_name,
             "games": games,
             "wins": wins,
             "losses": losses,
@@ -259,18 +265,63 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
             "avg_assists": round(float(avg_assists), 1),
         })
 
-    # Sort by games played descending
-    stats["champions"].sort(key=lambda x: -x["games"])
+    result["champions"].sort(key=lambda x: -x["games"])
+    return result
 
-    # Update season totals from champion data if not found earlier
-    if stats["season_games"] == 0 and stats["champions"]:
-        stats["season_games"] = sum(c["games"] for c in stats["champions"])
-        stats["season_wins"] = sum(c["wins"] for c in stats["champions"])
-        stats["season_losses"] = sum(c["losses"] for c in stats["champions"])
-        if stats["season_games"] > 0:
-            stats["season_winrate"] = round(
-                stats["season_wins"] / stats["season_games"] * 100, 1
-            )
+
+def scrape_player(game_name: str, tag_line: str) -> dict:
+    """Scrape a player's full stats from op.gg."""
+    stats = {
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+        "tier": "UNRANKED",
+        "division": None,
+        "lp": 0,
+        "previous_season_tier": None,
+        "peak_tier": None,
+        "season_games": 0,
+        "season_wins": 0,
+        "season_losses": 0,
+        "season_winrate": 0,
+        "champions": [],
+        "opgg_url": None,
+        "scrape_error": None,
+    }
+
+    errors = []
+    resolved_name = game_name
+    resolved_tag = tag_line
+
+    # Fetch tier from multisearch (also resolves real name/tag)
+    try:
+        tier_data = scrape_tier_from_multisearch(game_name, tag_line)
+        stats["tier"] = tier_data["tier"]
+        stats["division"] = tier_data["division"]
+        stats["lp"] = tier_data["lp"]
+        if tier_data.get("resolved_name"):
+            resolved_name = tier_data["resolved_name"]
+        if tier_data.get("resolved_tag"):
+            resolved_tag = tier_data["resolved_tag"]
+    except ScrapeError as e:
+        errors.append(f"Tier fetch failed: {e}")
+
+    # Build the op.gg URL using resolved name/tag
+    slug = f"{resolved_name}-{resolved_tag}"
+    stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
+
+    # Fetch champion stats using the resolved name/tag
+    time.sleep(2)
+    try:
+        champ_data = scrape_champions(resolved_name, resolved_tag)
+        stats["season_games"] = champ_data["season_games"]
+        stats["season_wins"] = champ_data["season_wins"]
+        stats["season_losses"] = champ_data["season_losses"]
+        stats["season_winrate"] = champ_data["season_winrate"]
+        stats["champions"] = champ_data["champions"]
+    except ScrapeError as e:
+        errors.append(f"Champions fetch failed: {e}")
+
+    if errors:
+        stats["scrape_error"] = "; ".join(errors)
 
     return stats
 
@@ -337,6 +388,5 @@ def get_ddragon_version() -> str:
 def champion_icon_url(champion_key: str) -> str:
     """Get Data Dragon CDN URL for a champion icon."""
     version = get_ddragon_version()
-    # Capitalize first letter for ddragon
     key = champion_key[0].upper() + champion_key[1:] if champion_key else "Unknown"
     return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{key}.png"

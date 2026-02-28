@@ -23,7 +23,8 @@
     {% for team in data.teams %}
     <div class="manage-team-row" data-team="{{ team.id }}">
       <div class="manage-team-header">
-        <strong>{{ team.name }}</strong>
+        <input type="text" class="input team-name-input" value="{{ team.name }}"
+               data-team="{{ team.id }}" onchange="renameTeam('{{ team.id }}', this.value)">
         {% if data.meta.my_team_id == team.id %}
         <span class="my-team-badge">MY TEAM</span>
         {% else %}
@@ -47,13 +48,16 @@
         <label class="sub-checkbox">
           <input type="checkbox" class="sub-check" data-team="{{ team.id }}"> Sub
         </label>
+        <label class="sub-checkbox">
+          <input type="checkbox" class="overwrite-check" data-team="{{ team.id }}"> Overwrite
+        </label>
         <button class="btn btn-sm" onclick="addPlayer('{{ team.id }}')">Add Player</button>
       </div>
 
       {% if team.players %}
       <table class="manage-player-table">
         <thead>
-          <tr><th>Role</th><th>Player</th><th>Rank</th><th>Status</th><th></th></tr>
+          <tr><th>Role</th><th>Player</th><th>Rank</th><th>Last Season</th><th>Peak</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
           {% for player in team.players %}
@@ -72,6 +76,18 @@
               {% else %}
               <span class="muted">—</span>
               {% endif %}
+            </td>
+            <td>
+              <input type="text" class="input-mini" style="width:80px"
+                     value="{{ player.stats.previous_season_tier or '' if player.stats else '' }}"
+                     placeholder="e.g. D2"
+                     onchange="updatePlayerExtra('{{ player.id }}', 'previous_season_tier', this.value)">
+            </td>
+            <td>
+              <input type="text" class="input-mini" style="width:80px"
+                     value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
+                     placeholder="e.g. M 100LP"
+                     onchange="updatePlayerExtra('{{ player.id }}', 'peak_tier', this.value)">
             </td>
             <td>
               {% if player.is_substitute %}
