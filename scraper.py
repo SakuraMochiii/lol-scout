@@ -91,7 +91,10 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
     Also extracts the real game_name, tagline, and internal_name for use
     in subsequent page fetches (the user-provided tag may be wrong).
     """
-    url = f"https://op.gg/lol/multisearch/na?summoners={quote(game_name)}"
+    # Use name#tag format (with # URL-encoded as %23) for exact match.
+    # Searching by name alone returns multiple results for common names.
+    search_term = f"{game_name}#{tag_line}" if tag_line else game_name
+    url = f"https://op.gg/lol/multisearch/na?summoners={quote(search_term)}"
     html = _fetch(url)
 
     result = {
@@ -103,18 +106,27 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
         "internal_name": None,
     }
 
-    # The multisearch returns multiple summoner objects as search results.
-    # We need to find the one matching our game_name (case-insensitive).
-    # Data is double-escaped in RSC payloads.
+    # The multisearch returns summoner objects in RSC payloads.
+    # Data is double-escaped.
     clean = html.replace('\\"', '"').replace("\\\\/", "/")
 
     # Find the data array with summoner objects
     data_idx = clean.find('"data":[{"id"')
+
+    # If exact name#tag search returned no data, fallback to name-only search
+    if data_idx < 0 and tag_line:
+        fallback_url = f"https://op.gg/lol/multisearch/na?summoners={quote(game_name)}"
+        try:
+            html = _fetch(fallback_url)
+            clean = html.replace('\\"', '"').replace("\\\\/", "/")
+            data_idx = clean.find('"data":[{"id"')
+        except ScrapeError:
+            pass
+
     if data_idx < 0:
         return result
 
-    # Extract individual summoner blocks by splitting on },{ patterns
-    # Each has game_name, tagline, solo_tier_info
+    # Find the summoner matching our game_name (case-insensitive)
     target = game_name.lower()
     for m in re.finditer(
         r'"game_name"\s*:\s*"([^"]+)"\s*,\s*"tagline"\s*:\s*"([^"]+)"',
