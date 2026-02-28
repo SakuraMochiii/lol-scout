@@ -241,15 +241,17 @@ def get_pick_recommendations(my_team: dict, opponent_team: dict) -> dict:
 
             # Counter score: how well does this pick do vs opponent's main?
             if counter_data and name in counter_data:
-                # counter_data[name] = win rate for OPPONENT's main vs this pick
+                # counter_data[name] = win rate for OPPONENT's main against us
                 # Low value = this pick counters the opponent
                 opp_wr = counter_data[name]
                 counter_advantage = 50 - opp_wr  # positive = we counter them
-                score += counter_advantage * 3
-                if counter_advantage > 0:
-                    reasons.append(f"Counters {opp_main['name']} ({opp_wr:.1f}% for them)")
-                elif counter_advantage < -3:
-                    reasons.append(f"Countered by {opp_main['name']} ({opp_wr:.1f}% for them)")
+                # Only count as a real counter/countered if gap is meaningful (>2%)
+                if counter_advantage > 2:
+                    score += counter_advantage * 3
+                    reasons.append(f"Counters {opp_main['name']} ({100 - opp_wr:.1f}% WR vs them)")
+                elif counter_advantage < -2:
+                    score += counter_advantage * 2  # smaller penalty for being countered
+                    reasons.append(f"Weak into {opp_main['name']} ({100 - opp_wr:.1f}% WR vs them)")
 
             # Mastery/comfort score
             # Weight mastery higher vs lower-ranked opponents (comfort pick matters more)
