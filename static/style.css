@@ -412,7 +412,13 @@ h2 { font-size: 16px; }
 .add-player-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
 .add-player-form .input { flex: 1; min-width: 200px; }
 .sub-checkbox { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; cursor: pointer; }
-.manage-player-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.manage-player-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.manage-player-table th:nth-child(1) { width: 50px; }  /* Role */
+.manage-player-table th:nth-child(2) { width: 25%; }   /* Player */
+.manage-player-table th:nth-child(3) { width: 14%; }   /* Peak */
+.manage-player-table th:nth-child(4) { width: 14%; }   /* Rank */
+.manage-player-table th:nth-child(5) { width: 14%; }   /* Last Season */
+.manage-player-table th:nth-child(6) { width: 60px; }  /* Status */
 .manage-player-table th {
   text-align: left;
   color: var(--text-muted);
