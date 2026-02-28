@@ -165,11 +165,12 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
 
 def scrape_season_history(game_name: str, tag_line: str) -> dict:
     """
-    Fetch past season rank data from the op.gg profile page.
-    Returns previous season rank, peak rank, and full season history.
+    Fetch past season rank data from leagueofgraphs.com.
+    Uses actual peak ranks (highest reached during season), not just
+    end-of-season ranks like op.gg.
     """
     slug = f"{game_name}-{tag_line}"
-    url = f"https://op.gg/lol/summoners/na/{quote(slug)}"
+    url = f"https://www.leagueofgraphs.com/summoner/na/{quote(slug)}"
     html = _fetch(url)
 
     result = {
@@ -178,80 +179,66 @@ def scrape_season_history(game_name: str, tag_line: str) -> dict:
         "season_history": [],
     }
 
-    text = html.replace('\\"', '"').replace("\\\\/", "/")
+    # Each tagDescription block has "Ranked Solo/Duo | ... | Ranked Flex | ..."
+    # We parse each block and extract only the Solo/Duo entry.
+    soloq_entries = []
+    descs = re.findall(
+        r"class=['\"]tagDescription['\"]>(.*?)</span>", html, re.DOTALL
+    )
+    for desc in descs:
+        # Strip HTML tags
+        clean = re.sub(r"<[^>]+>", " ", desc)
+        # Extract the Solo/Duo portion (before "Ranked Flex" if present)
+        solo_part = clean.split("Ranked Flex")[0]
+        if "Ranked Solo/Duo" not in solo_part:
+            continue
+        m = re.search(
+            r"This player reached ([\w\s]+?) during (Season [\w\s()]+?)\."
+            r"\s*At the end of the season, this player was ([\w\s]+?)\.",
+            solo_part,
+        )
+        if m:
+            soloq_entries.append({
+                "season": m.group(2).strip(),
+                "peak_rank": m.group(1).strip(),
+                "end_rank": m.group(3).strip(),
+            })
 
-    # Find the season history data array
-    idx = text.find('"data":[{"season":"S2')
-    if idx < 0:
-        return result
+    result["season_history"] = soloq_entries
 
-    # Extract the array
-    arr_start = text.index("[", idx)
-    depth = 0
-    arr_end = arr_start
-    for i in range(arr_start, min(arr_start + 10000, len(text))):
-        if text[i] == "[":
-            depth += 1
-        elif text[i] == "]":
-            depth -= 1
-            if depth == 0:
-                arr_end = i + 1
-                break
-
-    try:
-        seasons = json.loads(text[arr_start:arr_end])
-    except json.JSONDecodeError:
-        return result
-
-    # Build season history
-    best_tier = None
-    best_tier_order = 999
+    # Determine all-time peak and previous season
     tier_order = {
         "challenger": 0, "grandmaster": 1, "master": 2, "diamond": 3,
         "emerald": 4, "platinum": 5, "gold": 6, "silver": 7, "bronze": 8, "iron": 9,
     }
 
-    for s in seasons:
-        season_name = s.get("season", "").strip()
-        rank_entries = s.get("rank_entries", {})
-        rank_info = rank_entries.get("rank_info", {})
-        high_info = rank_entries.get("high_rank_info", {})
+    def tier_sort_key(rank_str: str) -> tuple:
+        """Lower = better. Returns (tier_order, division_order)."""
+        parts = rank_str.split()
+        base = parts[0].lower() if parts else ""
+        div_map = {"I": 1, "II": 2, "III": 3, "IV": 4}
+        div = div_map.get(parts[1], 5) if len(parts) > 1 else 5
+        return (tier_order.get(base, 999), div)
 
-        end_tier = rank_info.get("tier", "").strip()
-        end_lp = rank_info.get("lp")
-        peak_tier = high_info.get("tier", "").strip()
-        peak_lp = high_info.get("lp")
+    # All-time peak = best peak_rank across all seasons
+    best_peak = None
+    best_key = (999, 5)
+    for entry in soloq_entries:
+        if entry["peak_rank"]:
+            key = tier_sort_key(entry["peak_rank"])
+            if key < best_key:
+                best_key = key
+                best_peak = entry["peak_rank"]
+    result["peak_tier"] = best_peak
 
-        entry = {
-            "season": season_name,
-            "end_rank": end_tier.title() if end_tier else None,
-            "end_lp": end_lp,
-            "peak_rank": peak_tier.title() if peak_tier else None,
-            "peak_lp": peak_lp,
-        }
-        result["season_history"].append(entry)
-
-        # Track all-time peak
-        for tier_str in [peak_tier, end_tier]:
-            if not tier_str:
-                continue
-            base = tier_str.split()[0].lower() if tier_str else ""
-            order = tier_order.get(base, 999)
-            if order < best_tier_order:
-                best_tier_order = order
-                best_tier = tier_str.title()
-
-    # Previous season = first entry (most recent past season)
-    if result["season_history"]:
-        first = result["season_history"][0]
-        if first["end_rank"]:
-            result["previous_season_tier"] = first["end_rank"]
-            if first["end_lp"]:
-                result["previous_season_tier"] += f" ({first['end_lp']} LP)"
-
-    # All-time peak
-    if best_tier:
-        result["peak_tier"] = best_tier
+    # Previous season = most recent entry's end rank
+    if soloq_entries:
+        last = soloq_entries[-1]  # most recent is last in the list
+        # Actually leagueofgraphs lists oldest first or newest first?
+        # The regex finds them in page order. Let's pick the one with
+        # the highest season number as "most recent".
+        most_recent = max(soloq_entries, key=lambda e: e["season"])
+        result["previous_season_tier"] = most_recent["end_rank"]
 
     return result
 
