@@ -105,6 +105,7 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
         "resolved_name": None,
         "resolved_tag": None,
         "internal_name": None,
+        "puuid": None,
     }
 
     # The multisearch returns summoner objects in RSC payloads.
@@ -154,10 +155,16 @@ def scrape_tier_from_multisearch(game_name: str, tag_line: str) -> dict:
             result["division"] = int(tier_match.group(2))
             result["lp"] = int(tier_match.group(3))
 
-        # Get internal_name
+        # Get internal_name and puuid
         iname_match = re.search(r'"internal_name"\s*:\s*"([^"]+)"', after)
         if iname_match:
             result["internal_name"] = iname_match.group(1)
+
+        # puuid is before the game_name in the summoner object
+        before = clean[max(0, data_idx + m.start() - 500) : data_idx + m.start()]
+        puuid_match = re.search(r'"puuid"\s*:\s*"([^"]+)"', before)
+        if puuid_match:
+            result["puuid"] = puuid_match.group(1)
 
         break
 
@@ -500,6 +507,35 @@ def scrape_champions(game_name: str, tag_line: str, champion_role_map: dict = No
     return result
 
 
+def trigger_opgg_renewal(slug: str, puuid: str) -> bool:
+    """
+    Trigger op.gg's profile data refresh via their React Server Action.
+    This tells op.gg to pull fresh data from Riot's API.
+    Returns True if renewal was triggered successfully.
+    """
+    if not puuid:
+        return False
+    action_id = "405a04669583947dc03eb8c7f367adf28c8f714e86"
+    try:
+        resp = requests.post(
+            f"https://op.gg/lol/summoners/na/{quote(slug)}",
+            headers={
+                **HEADERS,
+                "Content-Type": "text/plain;charset=UTF-8",
+                "Next-Action": action_id,
+            },
+            data=json.dumps([{"region": "na", "puuid": puuid}]),
+            timeout=15,
+        )
+        if resp.status_code == 200 and "RENEWING" in resp.text:
+            # Wait for renewal to complete
+            time.sleep(3)
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def scrape_player(game_name: str, tag_line: str) -> dict:
     """Scrape a player's full stats from op.gg."""
     stats = {
@@ -524,6 +560,7 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     errors = []
     resolved_name = game_name
     resolved_tag = tag_line
+    tier_data = {}
 
     # Step 1: Fetch tier from multisearch (must go first — resolves real name/tag)
     try:
@@ -541,6 +578,11 @@ def scrape_player(game_name: str, tag_line: str) -> dict:
     # Build the op.gg URL using resolved name/tag
     slug = f"{resolved_name}-{resolved_tag}"
     stats["opgg_url"] = f"https://op.gg/lol/summoners/na/{quote(slug)}"
+
+    # Trigger op.gg profile renewal so we get fresh data
+    puuid = tier_data.get("puuid") if tier_data else None
+    if puuid:
+        trigger_opgg_renewal(slug, puuid)
 
     # Step 2: Fetch role data (u.gg), season history, and masteries in parallel
     # Then fetch champion stats with the role map
