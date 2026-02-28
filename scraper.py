@@ -232,12 +232,22 @@ def scrape_season_history(game_name: str, tag_line: str) -> dict:
                 best_peak = entry["peak_rank"]
     result["peak_tier"] = best_peak
 
-    # Previous season = second-to-last entry (last entry is current season).
-    # Entries are in chronological order (oldest first) from the page.
-    if len(soloq_entries) >= 2:
-        result["previous_season_tier"] = soloq_entries[-2]["end_rank"]
-    elif len(soloq_entries) == 1:
-        result["previous_season_tier"] = soloq_entries[0]["end_rank"]
+    # Previous season = the last completed season (not the current one).
+    # Entries are chronological (oldest first). The last entry might be the
+    # current season (S2026) or the last completed one if the player hasn't
+    # played this season yet. Check by looking at the year.
+    if soloq_entries:
+        from datetime import datetime
+        current_year = str(datetime.now().year)
+        last_entry = soloq_entries[-1]
+        if current_year in last_entry["season"]:
+            # Last entry is current season — previous is second-to-last
+            if len(soloq_entries) >= 2:
+                result["previous_season_tier"] = soloq_entries[-2]["end_rank"]
+        else:
+            # Last entry is NOT current season (player hasn't played this season)
+            # So the last entry itself is the previous season
+            result["previous_season_tier"] = last_entry["end_rank"]
 
     return result
 
