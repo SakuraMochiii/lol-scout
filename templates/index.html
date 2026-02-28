@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — LoL Scout{% endblock %}
+{% block title %}Dashboard — LOL IMs Info{% endblock %}
 {% block content %}
 <h1>Tournament Dashboard</h1>
 
@@ -27,9 +27,15 @@
         <span class="role-tag">{{ player.role[:3].upper() }}</span>
         <span class="player-name-mini">{{ player.game_name }}</span>
         {% if player.stats %}
+        {% if player.stats.tier != 'UNRANKED' %}
         <span class="tier-badge" style="color: {{ player.stats.tier|tier_color }}">
           {{ player|tier_display }}
         </span>
+        {% elif player.stats.previous_season_tier %}
+        <span class="past-rank-inline">Last: {{ player.stats.previous_season_tier }}</span>
+        {% else %}
+        <span class="tier-badge unranked">Unranked</span>
+        {% endif %}
         {% else %}
         <span class="tier-badge unranked">No data</span>
         {% endif %}
