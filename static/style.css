@@ -258,6 +258,7 @@ h2 { font-size: 16px; }
 .champ-info { display: flex; align-items: center; gap: 8px; }
 .champ-icon { width: 28px; height: 28px; border-radius: 4px; }
 .champ-name { font-weight: 500; }
+.champ-role-tag { font-size: 10px; color: var(--text-muted); background: var(--bg); padding: 1px 5px; border-radius: 3px; }
 .otp-badge {
   font-size: 9px;
   font-weight: 700;

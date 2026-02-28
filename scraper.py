@@ -22,6 +22,7 @@ MAX_RETRIES = 3
 RETRY_DELAYS = [1, 2, 4]
 
 _ddragon_version_cache = {"version": None, "fetched_at": 0}
+_champion_roles_cache = {"data": None, "fetched_at": 0}
 
 
 class ScrapeError(Exception):
@@ -308,6 +309,9 @@ def scrape_champions(game_name: str, tag_line: str) -> dict:
         "champions": [],
     }
 
+    # Fetch champion role mappings (cached)
+    champion_roles = get_champion_roles()
+
     # Find the champion stats data block
     idx = html.find("my_champion_stats")
     if idx < 0:
@@ -391,9 +395,14 @@ def scrape_champions(game_name: str, tag_line: str) -> dict:
         if not champ_key and image_url:
             champ_key = image_url.split("/")[-1].replace(".png", "")
 
+        # Look up typical role for this champion
+        display_name = champ_name or champ_key or f"Champion {champion_id}"
+        roles = champion_roles.get(display_name) or champion_roles.get(champ_key) or []
+        role_str = "/".join(ROLE_SHORT.get(r, r) for r in roles) if roles else ""
+
         result["champions"].append({
             "champion_id": champion_id,
-            "champion_name": champ_name or champ_key or f"Champion {champion_id}",
+            "champion_name": display_name,
             "champion_key": champ_key or champ_name,
             "games": games,
             "wins": wins,
@@ -403,6 +412,7 @@ def scrape_champions(game_name: str, tag_line: str) -> dict:
             "avg_kills": round(float(avg_kills), 1),
             "avg_deaths": round(float(avg_deaths), 1),
             "avg_assists": round(float(avg_assists), 1),
+            "role": role_str,
         })
 
     result["champions"].sort(key=lambda x: -x["games"])
@@ -543,6 +553,48 @@ def get_ddragon_version() -> str:
         return version
     except Exception:
         return _ddragon_version_cache["version"] or "14.24.1"
+
+
+def get_champion_roles() -> dict:
+    """
+    Fetch champion -> role mapping from Meraki Analytics (cached for 24h).
+    Returns dict like {"Vex": ["MIDDLE"], "Jinx": ["BOTTOM"], ...}
+    Keys are champion names (as used in op.gg data).
+    """
+    now = time.time()
+    if (
+        _champion_roles_cache["data"]
+        and now - _champion_roles_cache["fetched_at"] < 86400
+    ):
+        return _champion_roles_cache["data"]
+    try:
+        resp = requests.get(
+            "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json",
+            timeout=10,
+        )
+        resp.raise_for_status()
+        raw = resp.json()
+        roles = {}
+        for key, champ in raw.items():
+            name = champ.get("name", key)
+            positions = champ.get("positions", [])
+            roles[name] = positions
+            # Also map by key for fallback
+            roles[key] = positions
+        _champion_roles_cache["data"] = roles
+        _champion_roles_cache["fetched_at"] = now
+        return roles
+    except Exception:
+        return _champion_roles_cache["data"] or {}
+
+
+ROLE_SHORT = {
+    "TOP": "Top",
+    "JUNGLE": "Jgl",
+    "MIDDLE": "Mid",
+    "BOTTOM": "Bot",
+    "SUPPORT": "Sup",
+}
 
 
 def champion_icon_url(champion_key: str) -> str:
