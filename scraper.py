@@ -321,19 +321,28 @@ def scrape_champion_roles_ugg(game_name: str, tag_line: str) -> dict:
             resp = requests.post(
                 UGG_API, json=query, headers={**HEADERS, "Content-Type": "application/json"}, timeout=15
             )
-            resp.raise_for_status()
+            if resp.status_code != 200:
+                break
+            # Guard against HTML error pages
+            content_type = resp.headers.get("content-type", "")
+            if "json" not in content_type and "application" not in content_type:
+                break
             data = resp.json()
             if "errors" in data:
                 break
-            matches = data["data"]["fetchPlayerMatchSummaries"]["matchSummaries"]
+            summaries = data.get("data", {}).get("fetchPlayerMatchSummaries")
+            if not summaries:
+                break
+            matches = summaries.get("matchSummaries", [])
             if not matches:
                 break
             for m in matches:
-                role_name = UGG_ROLE_MAP.get(m["role"], "")
+                role_name = UGG_ROLE_MAP.get(m.get("role"), "")
                 if role_name:
                     champ_role_counts[m["championId"]][role_name] += 1
             page += 1
-        except Exception:
+            time.sleep(0.3)  # rate limit
+        except (requests.RequestException, json.JSONDecodeError, KeyError):
             break
 
     # For each champion, pick the most common role

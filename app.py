@@ -16,6 +16,14 @@ _refresh_jobs = {}
 app = Flask(__name__)
 
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Return JSON for API errors instead of HTML error pages."""
+    if request.path.startswith("/api/"):
+        return jsonify({"error": str(e)}), 500
+    raise e
+
+
 # --- Page routes ---
 
 
