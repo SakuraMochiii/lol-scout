@@ -64,7 +64,7 @@ def get_ban_recommendations(opponent_team: dict, num_bans: int = 5) -> list[dict
             second_games = sorted_champs[1].get("games", 0)
             if top_games >= 20 and second_games <= 2:
                 otp_name = sorted_champs[0]["champion_name"]
-            elif top_games >= 10 and second_games <= 2:
+            elif top_games >= 10 and second_games > 0 and top_games / second_games >= 2:
                 main_name = sorted_champs[0]["champion_name"]
         elif len(sorted_champs) == 1 and sorted_champs[0].get("games", 0) >= 10:
             otp_name = sorted_champs[0]["champion_name"]
@@ -220,7 +220,7 @@ def identify_one_tricks(team: dict) -> list[dict]:
 
         if top_games >= 20 and second_games <= 2:
             tag = "OTP"
-        elif top_games >= 10 and second_games <= 2:
+        elif top_games >= 10 and second_games > 0 and top_games / second_games >= 2:
             tag = "MAIN"
         else:
             continue

@@ -116,7 +116,7 @@
               {% set second_games = stats.champions[1].games %}
               {% if champ.games >= 20 and second_games <= 2 %}
               <span class="otp-badge">OTP</span>
-              {% elif champ.games >= 10 and second_games <= 2 %}
+              {% elif champ.games >= 10 and second_games > 0 and champ.games / second_games >= 2 %}
               <span class="main-badge">MAIN</span>
               {% endif %}
               {% elif loop.index == 1 and stats.champions|length == 1 and champ.games >= 10 %}
