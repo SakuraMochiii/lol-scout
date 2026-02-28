@@ -51,7 +51,7 @@ nav {
 .nav-links { margin-left: auto; display: flex; gap: 16px; font-size: 14px; }
 
 /* Container */
-.container { max-width: 1600px; margin: 0 auto; padding: 24px 12px 60px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px 20px 60px; }
 h1 { font-size: 22px; margin-bottom: 16px; }
 h2 { font-size: 16px; }
 
@@ -110,7 +110,7 @@ h2 { font-size: 16px; }
 /* Team grid */
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 .team-card {
@@ -135,10 +135,10 @@ h2 { font-size: 16px; }
   letter-spacing: 0.05em;
   vertical-align: middle;
 }
-.dashboard-roster { width: 100%; border-collapse: collapse; font-size: clamp(9px, 1.1vw, 12px); margin-bottom: 12px; }
-.dashboard-roster th { text-align: left; color: var(--text-muted); font-size: clamp(8px, 0.9vw, 10px); text-transform: uppercase; padding: 2px 3px; border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; }
-.dashboard-roster td { padding: 3px 3px; white-space: nowrap; }
-.dashboard-roster .player-name-mini { font-weight: 500; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.dashboard-roster { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+.dashboard-roster th { text-align: left; color: var(--text-muted); font-size: 10px; text-transform: uppercase; padding: 2px 4px; border-bottom: 1px solid var(--border); font-weight: 600; }
+.dashboard-roster td { padding: 3px 4px; white-space: nowrap; }
+.dashboard-roster .player-name-mini { font-weight: 500; }
 .dashboard-colored { font-weight: 600; }
 .dashboard-plain { color: var(--text-muted); }
 .subs-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
