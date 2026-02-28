@@ -232,14 +232,12 @@ def scrape_season_history(game_name: str, tag_line: str) -> dict:
                 best_peak = entry["peak_rank"]
     result["peak_tier"] = best_peak
 
-    # Previous season = most recent entry's end rank
-    if soloq_entries:
-        last = soloq_entries[-1]  # most recent is last in the list
-        # Actually leagueofgraphs lists oldest first or newest first?
-        # The regex finds them in page order. Let's pick the one with
-        # the highest season number as "most recent".
-        most_recent = max(soloq_entries, key=lambda e: e["season"])
-        result["previous_season_tier"] = most_recent["end_rank"]
+    # Previous season = second-to-last entry (last entry is current season).
+    # Entries are in chronological order (oldest first) from the page.
+    if len(soloq_entries) >= 2:
+        result["previous_season_tier"] = soloq_entries[-2]["end_rank"]
+    elif len(soloq_entries) == 1:
+        result["previous_season_tier"] = soloq_entries[0]["end_rank"]
 
     return result
 
