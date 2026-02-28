@@ -234,6 +234,22 @@ async function addPlayer(teamId) {
   }
 }
 
+async function updatePlayerName(playerId, value) {
+  const parts = value.trim().split('#');
+  const gameName = parts[0].trim();
+  const tagLine = (parts[1] || 'NA1').trim();
+  if (!gameName) return;
+  try {
+    await fetch(`/api/players/${playerId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game_name: gameName, tag_line: tagLine }),
+    });
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+}
+
 async function updatePlayerExtra(playerId, field, value) {
   try {
     await fetch(`/api/players/${playerId}`, {

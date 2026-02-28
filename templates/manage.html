@@ -75,7 +75,14 @@
                 {% endfor %}
               </select>
             </td>
-            <td>{% if player.stats and player.stats.opgg_url %}<a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener">{{ player.game_name }}#{{ player.tag_line }}</a>{% else %}{{ player.game_name }}#{{ player.tag_line }}{% endif %}</td>
+            <td class="player-name-cell">
+              <input type="text" class="input-mini player-name-edit" style="width:120px"
+                     value="{{ player.game_name }}#{{ player.tag_line }}"
+                     onchange="updatePlayerName('{{ player.id }}', this.value)">
+              {% if player.stats and player.stats.opgg_url %}
+              <a href="{{ player.stats.opgg_url }}" target="_blank" rel="noopener" class="opgg-link-mini">&#8599;</a>
+              {% endif %}
+            </td>
             <td>
               <input type="text" class="input-mini" style="width:80px"
                      value="{{ player.stats.peak_tier or '' if player.stats else '' }}"
