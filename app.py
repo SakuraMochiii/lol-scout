@@ -222,14 +222,22 @@ def api_create_player():
         else:
             player_role = role
 
-        # Single player add: replace existing starter in same role
+        # Single player add: replace existing starter in same role (keep position)
+        insert_idx = None
         if len(parsed) == 1 and not is_sub and player_role != "fill" and team:
-            for existing in team["players"]:
+            for j, existing in enumerate(team["players"]):
                 if existing.get("role") == player_role and not existing.get("is_substitute"):
-                    storage.delete_player(data, existing["id"])
+                    insert_idx = j
+                    team["players"].pop(j)
+                    storage.save(data)
                     break
 
         player = storage.add_player(data, team_id, game_name, tag_line, player_role, is_sub)
+        if player and insert_idx is not None and team:
+            # Move from end to original position
+            team["players"].remove(player)
+            team["players"].insert(insert_idx, player)
+            storage.save(data)
         if player:
             added.append(player)
 
