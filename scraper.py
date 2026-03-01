@@ -711,9 +711,20 @@ def parse_opgg_multi_link(url: str) -> list[tuple[str, str]]:
 
 
 def parse_player_input(text: str) -> list[tuple[str, str]]:
-    """Parse player input — either an op.gg link or a username#tag."""
+    """Parse player input — op.gg profile link, multi link, or username#tag."""
     text = text.strip()
     if "op.gg" in text:
+        # Check if it's a single profile URL: /summoners/na/Name-Tag
+        profile_match = re.search(
+            r"/summoners/\w+/([^/?]+)", unquote(text)
+        )
+        if profile_match and "multisearch" not in text:
+            slug = profile_match.group(1)
+            # Split on last hyphen for name-tag
+            if "-" in slug:
+                name, tag = slug.rsplit("-", 1)
+                return [(name.strip(), tag.strip())]
+            return [(slug, "NA1")]
         return parse_opgg_multi_link(text)
     if "#" in text:
         name, tag = text.rsplit("#", 1)
