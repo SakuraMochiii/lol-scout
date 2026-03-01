@@ -158,7 +158,12 @@
             </td>
             <td class="actions-cell">
               <button class="btn btn-sm" onclick="refreshPlayer('{{ player.id }}', this)">Refresh</button>
-              <button class="btn btn-sm btn-danger edit-only" style="display:none" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+              <span class="edit-only replace-group" style="display:none">
+                <input type="text" class="input-mini replace-input" style="width:110px"
+                       placeholder="New#TAG or link" data-player="{{ player.id }}">
+                <button class="btn btn-sm" onclick="replacePlayer('{{ player.id }}', '{{ team.id }}')">Replace</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePlayer('{{ player.id }}')">Remove</button>
+              </span>
             </td>
           </tr>
           {% endfor %}

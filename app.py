@@ -292,6 +292,33 @@ def api_delete_player(player_id):
     return jsonify({"error": "Player not found"}), 404
 
 
+@app.route("/api/players/<player_id>/replace", methods=["POST"])
+def api_replace_player(player_id):
+    data = storage.load()
+    _, old_player = storage.get_player(data, player_id)
+    if not old_player:
+        return jsonify({"error": "Player not found"}), 404
+
+    body = request.json
+    player_input = body.get("player_input", "").strip()
+    if not player_input:
+        return jsonify({"error": "Player input required"}), 400
+
+    parsed = scraper.parse_player_input(player_input)
+    if not parsed:
+        return jsonify({"error": "Could not parse player input"}), 400
+
+    game_name, tag_line = parsed[0]
+
+    # Keep the old player's role, swap name/tag, clear stats
+    old_player["game_name"] = game_name
+    old_player["tag_line"] = tag_line
+    old_player["stats"] = None
+    storage.save(data)
+
+    return jsonify({"success": True, "player": old_player})
+
+
 @app.route("/api/players/<player_id>/refresh", methods=["POST"])
 def api_refresh_player(player_id):
     data = storage.load()

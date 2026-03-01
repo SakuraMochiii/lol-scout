@@ -433,6 +433,7 @@ h2 { font-size: 16px; }
 }
 .manage-player-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .actions-cell { white-space: nowrap; }
+.replace-group { display: inline-flex; gap: 4px; align-items: center; }
 .actions-cell .btn { margin-right: 4px; }
 .opgg-link-mini { font-size: 12px; color: var(--accent); }
 

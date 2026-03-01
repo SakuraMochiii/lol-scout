@@ -244,6 +244,24 @@ async function addPlayer(teamId) {
   }
 }
 
+async function replacePlayer(playerId, teamId) {
+  const input = document.querySelector(`.replace-input[data-player="${playerId}"]`);
+  const newPlayer = input.value.trim();
+  if (!newPlayer) return;
+  try {
+    const res = await fetch(`/api/players/${playerId}/replace`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_input: newPlayer, team_id: teamId }),
+    });
+    const data = await res.json();
+    if (data.success) location.reload();
+    else alert('Failed: ' + (data.error || 'Unknown error'));
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+}
+
 async function updatePlayerName(playerId, value) {
   const parts = value.trim().split('#');
   const gameName = parts[0].trim();
