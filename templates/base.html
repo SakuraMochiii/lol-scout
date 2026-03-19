@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}LOL IMs Info{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,6 +14,7 @@
     <span class="nav-season">{{ data.meta.season_name }}</span>
     <div class="nav-links">
       <a href="/">Dashboard</a>
+      <a href="/bracket">Bracket</a>
       <a href="/manage">Manage</a>
       <a href="{% block export_url %}/export{% endblock %}" class="btn btn-sm" style="margin-left:8px">Export</a>
     </div>

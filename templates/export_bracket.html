@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ bracket.name }} — Bracket Export</title>
+<style>
+:root {
+  --bg: #0a0e14; --bg-card: #111827; --bg-hover: #1e293b; --border: #2d3748;
+  --text: #e2e8f0; --text-muted: #718096; --gold: #c8aa6e; --accent: #6366f1;
+  --red: #ef4444; --green: #22c55e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+.container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+.header { text-align: center; padding: 32px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.header h1 { font-size: 22px; margin-bottom: 4px; }
+.header .sub { color: var(--text-muted); font-size: 13px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--gold); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 6px 8px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.my-team { background: rgba(99,102,241,0.12); }
+.my-team-name { color: var(--accent); font-weight: 700; }
+.round-title { font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
+.match-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-hover); border-radius: 6px; font-size: 13px; margin-bottom: 4px; }
+.match-row.my-match { background: rgba(99,102,241,0.12); }
+.score { font-weight: 700; color: var(--gold); min-width: 40px; text-align: center; }
+.muted { color: var(--text-muted); }
+.win-label { font-size: 11px; font-weight: 700; color: var(--green); background: rgba(34,197,94,0.1); padding: 1px 6px; border-radius: 3px; }
+.loss-label { font-size: 11px; font-weight: 700; color: var(--red); background: rgba(239,68,68,0.1); padding: 1px 6px; border-radius: 3px; }
+.team-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.player-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.player-pill { display: flex; align-items: center; gap: 4px; background: var(--bg-hover); padding: 4px 8px 4px 4px; border-radius: 6px; font-size: 11px; }
+.player-pill img { width: 24px; height: 24px; border-radius: 4px; }
+.player-pill .name { font-weight: 600; }
+.screenshot { width: 100%; max-width: 800px; border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; }
+.game-details { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin-top: 4px; margin-bottom: 8px; }
+.game-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 32px; }
+</style>
+</head>
+<body>
+
+{%- set my_team_ns = namespace(name=None) -%}
+{%- if data.meta.my_team_id -%}
+  {%- for team in data.teams -%}
+    {%- if team.id == data.meta.my_team_id -%}{%- set my_team_ns.name = team.name -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+<div class="header">
+  <h1>{{ bracket.name }}</h1>
+  <div class="sub">{{ bracket.type | title }} &mdash; {{ bracket.state | title }}{% if bracket.current_round %} &mdash; Round {{ bracket.current_round }} of {{ bracket.total_rounds }}{% endif %}</div>
+  <div class="sub" style="margin-top:4px;">Exported {{ now }}</div>
+</div>
+
+<div class="container">
+
+{# --- Standings --- #}
+<div class="card">
+  <div class="card-title">Standings</div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Team</th><th style="text-align:center;">W</th><th style="text-align:center;">L</th><th>Record</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in bracket.standings %}
+      <tr class="{% if s.name == my_team_ns.name %}my-team{% endif %}">
+        <td style="color:var(--text-muted);">{{ loop.index }}</td>
+        <td style="font-weight:600;" class="{% if s.name == my_team_ns.name %}my-team-name{% endif %}">{{ s.name }}</td>
+        <td style="text-align:center; color:var(--green); font-weight:600;">{{ s.wins }}</td>
+        <td style="text-align:center; color:var(--red); font-weight:600;">{{ s.losses }}</td>
+        <td>{{ s.wins }}-{{ s.losses }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# --- All Rounds with Match Details --- #}
+<div class="card">
+  <div class="card-title">Match Results</div>
+  {% for rnd in bracket.rounds %}
+  <div style="margin-bottom:20px;">
+    <div class="round-title" style="{% if rnd.round == bracket.current_round %}color:var(--accent);{% endif %}">
+      Round {{ rnd.round }}
+      {% if rnd.round == bracket.current_round %}<span style="font-size:11px; background:var(--accent); color:white; padding:1px 6px; border-radius:4px; margin-left:6px;">CURRENT</span>{% endif %}
+    </div>
+
+    {% for m in rnd.matches %}
+    <div style="margin-bottom:8px;">
+      <div class="match-row {% if m.player1 == my_team_ns.name or m.player2 == my_team_ns.name %}my-match{% endif %}">
+        {% if m.state == 'complete' %}
+          <span style="{% if m.winner != m.player1 %}color:var(--text-muted);{% endif %}{% if m.player1 == my_team_ns.name %} color:var(--accent);{% endif %} min-width:200px; {% if m.winner == m.player1 %}font-weight:700;{% endif %}">{{ m.player1 }}</span>
+          <span class="score">{{ m.score1 }} - {{ m.score2 }}</span>
+          <span style="{% if m.winner != m.player2 %}color:var(--text-muted);{% endif %}{% if m.player2 == my_team_ns.name %} color:var(--accent);{% endif %} {% if m.winner == m.player2 %}font-weight:700;{% endif %}">{{ m.player2 }}</span>
+        {% else %}
+          <span style="min-width:200px;">{{ m.player1 }}</span>
+          <span class="muted" style="min-width:40px; text-align:center;">vs</span>
+          <span>{{ m.player2 }}</span>
+        {% endif %}
+      </div>
+
+      {% if m.id in match_details %}
+      {% set games = match_details[m.id] %}
+      {% for game in games %}
+      <div class="game-details">
+        {% if games|length > 1 %}
+        <div style="font-size:11px; font-weight:700; color:var(--gold); margin-bottom:6px;">
+          Game {{ loop.index }}{% if game.duration %} &middot; {{ game.duration }}{% endif %}
+        </div>
+        {% endif %}
+        {% set w_players = game.team1_players if game.winner == game.team1 else game.team2_players %}
+        {% set l_players = game.team2_players if game.winner == game.team1 else game.team1_players %}
+        {% set w_name = game.winner %}
+        {% set l_name = game.team2 if game.winner == game.team1 else game.team1 %}
+
+        <div class="team-header">
+          <span class="win-label">WIN</span>
+          <span style="font-size:12px; font-weight:600; {% if w_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ w_name }}</span>
+        </div>
+        <div class="player-pills">
+          {% for p in w_players %}
+          <div class="player-pill">
+            {% if p.champion %}<img src="{{ p.champion|champion_name_icon }}" onerror="this.style.display='none'" alt="{{ p.champion }}" title="{{ p.champion }}">{% endif %}
+            <span class="name" style="{% if w_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ p.name }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="team-header">
+          <span class="loss-label">LOSS</span>
+          <span style="font-size:12px; font-weight:600; {% if l_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ l_name }}</span>
+        </div>
+        <div class="player-pills">
+          {% for p in l_players %}
+          <div class="player-pill">
+            {% if p.champion %}<img src="{{ p.champion|champion_name_icon }}" onerror="this.style.display='none'" alt="{{ p.champion }}" title="{{ p.champion }}">{% endif %}
+            <span class="name" style="{% if l_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ p.name }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if game.image and embedded_images.get(game.image) %}
+        <img class="screenshot" src="{{ embedded_images[game.image] }}" alt="{{ game.image }}">
+        {% endif %}
+        {% if not loop.last %}<hr class="game-divider">{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+</div>
+<div class="footer">Generated by LOL IMs Info</div>
+</body>
+</html>

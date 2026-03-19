@@ -67,6 +67,9 @@ a:hover { text-decoration: underline; }
 .season-row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--border); }
 .season-name { color: var(--accent); font-weight: 600; min-width: 70px; }
 .footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 32px; }
+.ims-badge { font-size: 9px; color: var(--accent); background: rgba(14,165,233,0.15); padding: 0 4px; border-radius: 3px; font-weight: 600; }
+.ims-champ { background: rgba(14,165,233,0.08); border-left: 2px solid var(--accent); padding-left: 6px; }
+.ims-roles { font-size: 10px; color: var(--accent); background: rgba(14,165,233,0.12); padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -87,15 +90,28 @@ a:hover { text-decoration: underline; }
   {% for player in team.players %}
   {% set stats = player.stats %}
   <div class="player-card">
+    {% set ims_p = all_ims_stats.get(team.name, {}).get(player.game_name, {}) %}
     <div class="player-header" onclick="toggle(this)">
       <span class="role-tag">{{ player.role[:3].upper() }}</span>
+      {% if ims_p.get('roles') and ims_p.roles|length > 1 %}
+      <span class="ims-roles" title="IMs roles: {{ ims_p.roles|join(', ') }}">{{ ims_p.roles|join('/') }}</span>
+      {% endif %}
       <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
       {% if stats %}
+      {% set cur_higher = player|current_higher_than_peak %}
       {% if stats.peak_tier %}
-      <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">{{ stats.peak_tier }}</span>
+        {% if cur_higher %}
+        <span class="tier-badge" style="color: var(--text-muted);">{{ stats.peak_tier }}</span>
+        {% else %}
+        <span class="tier-badge" style="color: {{ stats.peak_tier|peak_color }}">{{ stats.peak_tier }}</span>
+        {% endif %}
       {% endif %}
       {% if stats.tier != 'UNRANKED' %}
-      <span class="current-rank-inline">{{ player|tier_display }}</span>
+        {% if cur_higher %}
+        <span class="tier-badge" style="color: {{ stats.tier|tier_color }}">{{ player|tier_display }}</span>
+        {% else %}
+        <span class="current-rank-inline">{{ player|tier_display }}</span>
+        {% endif %}
       {% else %}
       <span class="current-rank-inline">Unranked</span>
       {% endif %}
@@ -141,17 +157,22 @@ a:hover { text-decoration: underline; }
       <div class="player-tabs">
         <button class="player-tab active" onclick="switchTab(this,'ranked')">Ranked</button>
         <button class="player-tab" onclick="switchTab(this,'mastery')">Mastery</button>
+        {% if ims_p.get('champion_stats') %}
+        <button class="player-tab" onclick="switchTab(this,'ims')">IMs</button>
+        {% endif %}
       </div>
 
       <div class="player-tab-panel" data-tab="ranked">
         {% if stats.champions %}
         <div class="champ-list">
           <div class="champ-list-header"><span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span></div>
+          {% set ims_champs_export = ims_p.get('champions', []) %}
           {% for champ in stats.champions[:10] %}
-          <div class="champ-row">
+          <div class="champ-row{% if champ.champion_name in ims_champs_export %} ims-champ{% endif %}">
             <div class="champ-info">
               <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}" onerror="this.style.display='none'">
               <span class="champ-name">{{ champ.champion_name }}</span>
+              {% if champ.champion_name in ims_champs_export %}<span class="ims-badge">IMs</span>{% endif %}
               {% if champ.role %}<span class="champ-role-tag">{{ champ.role }}</span>{% endif %}
               {% if loop.index == 1 and champ.games >= 10 and stats.champions|length >= 2 %}
               {% set second_games = stats.champions[1].games %}
@@ -185,10 +206,11 @@ a:hover { text-decoration: underline; }
         <div class="champ-list">
           <div class="champ-list-header mastery-header"><span>Champion</span><span>Level</span><span>Points</span><span>Last Played</span></div>
           {% for m in stats.masteries[:15] %}
-          <div class="champ-row">
+          <div class="champ-row{% if m.champion_name in ims_champs_export %} ims-champ{% endif %}">
             <div class="champ-info">
               <img class="champ-icon" src="{{ m.champion_key|champion_icon }}" onerror="this.style.display='none'">
               <span class="champ-name">{{ m.champion_name }}</span>
+              {% if m.champion_name in ims_champs_export %}<span class="ims-badge">IMs</span>{% endif %}
             </div>
             <span class="mastery-level">Lvl {{ m.level }}</span>
             <span class="mastery-points">{{ "{:,}".format(m.points) }}</span>
@@ -200,6 +222,31 @@ a:hover { text-decoration: underline; }
         <p class="muted">No mastery data.</p>
         {% endif %}
       </div>
+
+      {% if ims_p.get('champion_stats') %}
+      <div class="player-tab-panel" data-tab="ims" style="display:none">
+        <div class="champ-list">
+          <div class="champ-list-header"><span>Champion</span><span>Games</span><span>Win Rate</span><span>Record</span></div>
+          {% for c in ims_p.champion_stats %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ c.name|champion_name_icon }}" onerror="this.style.display='none'">
+              <span class="champ-name">{{ c.name }}</span>
+            </div>
+            <span class="champ-games">{{ c.games }}g</span>
+            <div class="wr-bar-container">
+              <div class="wr-bar" style="width: {{ c.winrate }}%"></div>
+              <span class="wr-text {{ 'good' if c.winrate >= 55 else 'bad' if c.winrate < 48 else '' }}">{{ c.winrate }}%</span>
+            </div>
+            <span class="champ-kda">{{ c.wins }}W {{ c.games - c.wins }}L</span>
+          </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:var(--text-muted);">
+          {{ ims_p.games|length }} total IMs game{{ 's' if ims_p.games|length != 1 else '' }}
+        </div>
+      </div>
+      {% endif %}
 
       {% if stats.opgg_url %}
       <div style="margin-top:8px"><a href="{{ stats.opgg_url }}" target="_blank" rel="noopener">op.gg profile</a></div>

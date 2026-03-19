@@ -1,5 +1,6 @@
 """Flask app for LoL Tournament Scout."""
 
+import json
 import threading
 import time
 from pathlib import Path
@@ -7,8 +8,94 @@ from pathlib import Path
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 import analysis
+import challonge
 import scraper
 import storage
+
+MATCH_RESULTS_FILE = Path("data") / "match_results.json"
+
+
+def load_match_results():
+    """Load match results from JSON file."""
+    if MATCH_RESULTS_FILE.exists():
+        with open(MATCH_RESULTS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+
+def get_match_results_for_bracket(match_results, bracket):
+    """Index match results by bracket match: key = match_id -> list of games."""
+    lookup = {}
+    if not bracket or not match_results:
+        return lookup
+    for game in match_results:
+        key = tuple(sorted([game["team1"], game["team2"]]))
+        for rnd in bracket.get("rounds", []):
+            for m in rnd["matches"]:
+                if m["state"] != "complete":
+                    continue
+                bkey = tuple(sorted([m["player1"], m["player2"]]))
+                if bkey == key:
+                    if m["id"] not in lookup:
+                        lookup[m["id"]] = []
+                    lookup[m["id"]].append(game)
+    return lookup
+
+
+def get_ims_player_stats(match_results, team_name, data):
+    """Compute IMs stats per player for a team: roles played, champions used."""
+    stats = {}  # player_name -> {roles: set, champions: set, games: [...]}
+    if not match_results:
+        return stats
+    for game in match_results:
+        if game["team1"] == team_name:
+            players = game.get("team1_players", [])
+        elif game["team2"] == team_name:
+            players = game.get("team2_players", [])
+        else:
+            continue
+        for p in players:
+            name = p["name"]
+            if name not in stats:
+                stats[name] = {"roles": set(), "champions": set(), "games": []}
+            if p.get("role"):
+                stats[name]["roles"].add(p["role"])
+            if p.get("champion"):
+                stats[name]["champions"].add(p["champion"])
+            stats[name]["games"].append({
+                "opponent": game["team2"] if game["team1"] == team_name else game["team1"],
+                "win": game["winner"] == team_name,
+                "kills": p.get("kills"),
+                "deaths": p.get("deaths"),
+                "assists": p.get("assists"),
+                "champion": p.get("champion", ""),
+                "role": p.get("role", ""),
+                "gold": p.get("gold"),
+                "cs": p.get("cs"),
+            })
+    # Convert sets to sorted lists and compute per-champion stats
+    for name in stats:
+        stats[name]["roles"] = sorted(stats[name]["roles"])
+        stats[name]["champions"] = sorted(stats[name]["champions"])
+        # Per-champion win/loss stats
+        champ_stats = {}
+        for g in stats[name]["games"]:
+            champ = g.get("champion", "")
+            if not champ:
+                continue
+            if champ not in champ_stats:
+                champ_stats[champ] = {"games": 0, "wins": 0}
+            champ_stats[champ]["games"] += 1
+            if g["win"]:
+                champ_stats[champ]["wins"] += 1
+        # Sort by games played descending
+        stats[name]["champion_stats"] = sorted(
+            [{"name": c, "games": s["games"], "wins": s["wins"],
+              "winrate": round(s["wins"] / s["games"] * 100) if s["games"] > 0 else 0}
+             for c, s in champ_stats.items()],
+            key=lambda x: x["games"], reverse=True,
+        )
+    return stats
 
 # Track background refresh jobs: {team_id: {status, results, total, done}}
 _refresh_jobs = {}
@@ -26,7 +113,13 @@ def handle_exception(e):
 
 @app.route("/favicon.ico")
 def favicon():
-    return "", 204
+    return redirect(url_for("static", filename="favicon.svg"))
+
+
+@app.route("/match-img/<filename>")
+def match_image(filename):
+    from flask import send_from_directory
+    return send_from_directory(Path("data") / "match-results", filename)
 
 
 # --- Page routes ---
@@ -45,7 +138,9 @@ def team_detail(team_id):
     if not team:
         return redirect(url_for("index"))
     is_my_team = data["meta"]["my_team_id"] == team_id
-    return render_template("team.html", data=data, team=team, is_my_team=is_my_team)
+    match_results = load_match_results()
+    ims_stats = get_ims_player_stats(match_results, team["name"], data)
+    return render_template("team.html", data=data, team=team, is_my_team=is_my_team, ims_stats=ims_stats)
 
 
 @app.route("/analysis/<opp_id>")
@@ -74,10 +169,53 @@ def analysis_page(opp_id):
     )
 
 
+@app.route("/bracket")
+def bracket_page():
+    data = storage.load()
+    bracket = challonge.load_bracket()
+    match_results = load_match_results()
+    match_details = get_match_results_for_bracket(match_results, bracket)
+    return render_template("bracket.html", data=data, bracket=bracket, match_details=match_details)
+
+
 @app.route("/manage")
 def manage():
     data = storage.load()
     return render_template("manage.html", data=data)
+
+
+@app.route("/export/bracket")
+def export_bracket():
+    import base64
+    from datetime import datetime, timezone
+    data = storage.load()
+    bracket = challonge.load_bracket()
+    match_results = load_match_results()
+    match_details = get_match_results_for_bracket(match_results, bracket)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    # Embed screenshots as base64 so the export is self-contained
+    embedded_images = {}
+    img_dir = Path("data") / "match-results"
+    for games in match_details.values():
+        for game in games:
+            img_name = game.get("image", "")
+            if img_name and img_name not in embedded_images:
+                img_path = img_dir / img_name
+                if img_path.exists():
+                    with open(img_path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode("ascii")
+                    embedded_images[img_name] = f"data:image/png;base64,{b64}"
+
+    html = render_template(
+        "export_bracket.html", data=data, bracket=bracket,
+        match_details=match_details, now=now, embedded_images=embedded_images,
+    )
+    filename = f"bracket_{data['meta']['season_name'].replace(' ', '_')}.html"
+    return html, 200, {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": "text/html; charset=utf-8",
+    }
 
 
 @app.route("/export")
@@ -85,7 +223,11 @@ def export_page():
     from datetime import datetime, timezone
     data = storage.load()
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    html = render_template("export.html", data=data, now=now)
+    match_results = load_match_results()
+    all_ims_stats = {}
+    for team in data["teams"]:
+        all_ims_stats[team["name"]] = get_ims_player_stats(match_results, team["name"], data)
+    html = render_template("export.html", data=data, now=now, all_ims_stats=all_ims_stats)
     filename = f"lol_ims_info_{data['meta']['season_name'].replace(' ', '_')}.html"
     return html, 200, {
         "Content-Disposition": f'attachment; filename="{filename}"',
@@ -127,6 +269,23 @@ def export_analysis(opp_id):
 
 
 # --- API routes ---
+
+
+@app.route("/api/bracket/refresh", methods=["POST"])
+def api_bracket_refresh():
+    url = request.form.get("url") or (request.json or {}).get("url", "")
+    if not url:
+        return redirect(url_for("bracket_page"))
+    try:
+        bracket = challonge.fetch_bracket(url)
+        challonge.save_bracket(bracket)
+    except Exception as e:
+        if request.content_type and "json" in request.content_type:
+            return jsonify({"error": str(e)}), 500
+        return redirect(url_for("bracket_page"))
+    if request.content_type and "json" in request.content_type:
+        return jsonify({"success": True})
+    return redirect(url_for("bracket_page"))
 
 
 @app.route("/api/season", methods=["PUT"])
@@ -490,6 +649,16 @@ def api_import_multi():
 @app.template_filter("champion_icon")
 def champion_icon_filter(champion_key):
     return scraper.champion_icon_url(champion_key)
+
+
+@app.template_filter("champion_name_icon")
+def champion_name_icon_filter(champion_name):
+    """Get icon URL from a display name like 'Lee Sin' or 'Dr. Mundo'."""
+    if not champion_name:
+        return ""
+    # Convert display name to ddragon key: remove spaces, dots, apostrophes
+    key = champion_name.replace(" ", "").replace(".", "").replace("'", "")
+    return scraper.champion_icon_url(key)
 
 
 @app.template_filter("tier_color")

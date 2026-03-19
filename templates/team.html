@@ -4,9 +4,11 @@
 <div class="team-header">
   <h1>
     {{ team.name }}
+    {% if team.team_number %}<span class="muted" style="font-size:14px; font-weight:400; margin-left:6px;">(Team {{ team.team_number }})</span>{% endif %}
     {% if is_my_team %}<span class="my-team-badge">MY TEAM</span>{% endif %}
   </h1>
   <div class="team-header-actions">
+    <a href="/bracket" class="btn btn-sm">Bracket</a>
     <button class="btn" onclick="refreshTeam('{{ team.id }}')">Refresh All</button>
     {% if data.meta.my_team_id and not is_my_team %}
     <a href="/analysis/{{ team.id }}" class="btn btn-accent">Ban/Pick Analysis</a>
@@ -33,6 +35,9 @@
   <div class="player-card" data-player="{{ player.id }}">
     <div class="player-header" onclick="togglePlayer(this)">
       <span class="role-tag role-{{ player.role }}">{{ player.role[:3].upper() }}</span>
+      {% if ims_stats.get(player.game_name) and ims_stats[player.game_name].roles|length > 1 %}
+      <span style="font-size:10px; color:var(--accent); background:rgba(99,102,241,0.12); padding:1px 5px; border-radius:3px; margin-right:2px;" title="Played multiple roles in IMs: {{ ims_stats[player.game_name].roles|join(', ') }}">{{ ims_stats[player.game_name].roles|join('/') }}</span>
+      {% endif %}
       <span class="player-name">{{ player.game_name }}<span class="tag">#{{ player.tag_line }}</span></span>
       {% if stats %}
       {% set cur_higher = player|current_higher_than_peak %}
@@ -103,6 +108,9 @@
       <div class="player-tabs">
         <button class="player-tab active" onclick="switchPlayerTab(this, 'ranked')">Ranked</button>
         <button class="player-tab" onclick="switchPlayerTab(this, 'mastery')">Mastery</button>
+        {% if ims_stats.get(player.game_name, {}).get('champion_stats') %}
+        <button class="player-tab" onclick="switchPlayerTab(this, 'ims')">IMs</button>
+        {% endif %}
       </div>
 
       <div class="player-tab-panel" data-tab="ranked">
@@ -111,13 +119,17 @@
           <div class="champ-list-header">
             <span>Champion</span><span>Games</span><span>Win Rate</span><span>KDA</span>
           </div>
+          {% set ims_champs = ims_stats.get(player.game_name, {}).get('champions', []) %}
           {% for champ in stats.champions[:10] %}
-          <div class="champ-row">
+          <div class="champ-row" style="{% if champ.champion_name in ims_champs %}background:rgba(99,102,241,0.08); border-left:2px solid var(--accent); padding-left:6px;{% endif %}">
             <div class="champ-info">
               <img class="champ-icon" src="{{ champ.champion_key|champion_icon }}"
                    alt="{{ champ.champion_name }}"
                    onerror="this.style.display='none'">
               <span class="champ-name">{{ champ.champion_name }}</span>
+              {% if champ.champion_name in ims_champs %}
+              <span style="font-size:9px; color:var(--accent); background:rgba(99,102,241,0.15); padding:0 4px; border-radius:3px; font-weight:600;">IMs</span>
+              {% endif %}
               {% if champ.role %}
               <span class="champ-role-tag">{{ champ.role }}</span>
               {% endif %}
@@ -156,13 +168,17 @@
           <div class="champ-list-header mastery-header">
             <span>Champion</span><span>Level</span><span>Points</span><span>Last Played</span>
           </div>
+          {% set ims_champs_mastery = ims_stats.get(player.game_name, {}).get('champions', []) %}
           {% for m in stats.masteries[:15] %}
-          <div class="champ-row">
+          <div class="champ-row" style="{% if m.champion_name in ims_champs_mastery %}background:rgba(99,102,241,0.08); border-left:2px solid var(--accent); padding-left:6px;{% endif %}">
             <div class="champ-info">
               <img class="champ-icon" src="{{ m.champion_key|champion_icon }}"
                    alt="{{ m.champion_name }}"
                    onerror="this.style.display='none'">
               <span class="champ-name">{{ m.champion_name }}</span>
+              {% if m.champion_name in ims_champs_mastery %}
+              <span style="font-size:9px; color:var(--accent); background:rgba(99,102,241,0.15); padding:0 4px; border-radius:3px; font-weight:600;">IMs</span>
+              {% endif %}
             </div>
             <span class="mastery-level">Lvl {{ m.level }}</span>
             <span class="mastery-points">{{ "{:,}".format(m.points) }}</span>
@@ -174,6 +190,40 @@
         <p class="muted">No mastery data available. Refresh to fetch.</p>
         {% endif %}
       </div>
+
+      {% set ims_p = ims_stats.get(player.game_name, {}) %}
+      {% if ims_p.get('champion_stats') %}
+      <div class="player-tab-panel" data-tab="ims" style="display:none">
+        <div class="champ-list">
+          <div class="champ-list-header">
+            <span>Champion</span><span>Games</span><span>Win Rate</span><span>Record</span>
+          </div>
+          {% for c in ims_p.champion_stats %}
+          <div class="champ-row">
+            <div class="champ-info">
+              <img class="champ-icon" src="{{ c.name|champion_name_icon }}"
+                   alt="{{ c.name }}"
+                   onerror="this.style.display='none'">
+              <span class="champ-name">{{ c.name }}</span>
+            </div>
+            <span class="champ-games">{{ c.games }}g</span>
+            <div class="wr-bar-container">
+              <div class="wr-bar" style="width: {{ c.winrate }}%"></div>
+              <span class="wr-text {{ 'good' if c.winrate >= 55 else 'bad' if c.winrate < 48 else '' }}">
+                {{ c.winrate }}%
+              </span>
+            </div>
+            <span class="champ-kda" style="color:var(--text-muted);">{{ c.wins }}W {{ c.games - c.wins }}L</span>
+          </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:var(--text-muted);">
+          {{ ims_p.games|length }} total IMs game{{ 's' if ims_p.games|length != 1 else '' }}
+          &middot; Roles: {{ ims_p.roles|join(', ') }}
+        </div>
+      </div>
+      {% endif %}
+
       {% else %}
       <p class="muted">No data yet. Click refresh to fetch from op.gg.</p>
       {% endif %}

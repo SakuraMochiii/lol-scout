@@ -2,12 +2,13 @@
 {% block title %}{{ my_team.name }} vs {{ opp_team.name }} — LOL IMs Info{% endblock %}
 {% block export_url %}/export/analysis/{{ opp_team.id }}{% endblock %}
 {% block content %}
-<div class="analysis-header">
+<div class="analysis-header" style="display:flex; align-items:center; justify-content:space-between;">
   <h1>
     <a href="/team/{{ my_team.id }}">{{ my_team.name }}</a>
     <span class="vs">vs</span>
     <a href="/team/{{ opp_team.id }}">{{ opp_team.name }}</a>
   </h1>
+  <a href="/bracket" class="btn btn-sm">Bracket</a>
 </div>
 
 {% if one_tricks %}

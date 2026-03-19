@@ -19,7 +19,7 @@
     {% if data.meta.my_team_id == team.id %}
     <div class="my-team-badge">MY TEAM</div>
     {% endif %}
-    <h2><a href="/team/{{ team.id }}">{{ team.name }}</a></h2>
+    <h2><a href="/team/{{ team.id }}">{{ team.name }}</a>{% if team.team_number %} <span class="muted" style="font-size:12px; font-weight:400;">(Team {{ team.team_number }})</span>{% endif %}</h2>
     <table class="dashboard-roster">
       <thead>
         <tr><th></th><th>Player</th><th>Peak</th><th>Cur</th><th>Last</th></tr>

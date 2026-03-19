@@ -1,0 +1,2414 @@
+[
+  {
+    "image": "image3.png",
+    "date": "2026-02-22",
+    "duration": "20:35",
+    "team1": "smiling friends",
+    "team2": "Animal fries in the bag",
+    "winner": "smiling friends",
+    "team1_score": {
+      "kills": 36,
+      "deaths": 7,
+      "assists": 44,
+      "gold": 57876
+    },
+    "team2_score": {
+      "kills": 7,
+      "deaths": 36,
+      "assists": 7,
+      "gold": 40389
+    },
+    "team1_players": [
+      {
+        "name": "carb",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 15,
+        "kills": 1,
+        "deaths": 2,
+        "assists": 9,
+        "cs": 168,
+        "gold": 8945
+      },
+      {
+        "name": "Naga1736",
+        "champion": "Viego",
+        "role": "jungle",
+        "level": 15,
+        "kills": 7,
+        "deaths": 1,
+        "assists": 6,
+        "cs": 214,
+        "gold": 12498
+      },
+      {
+        "name": "IXX",
+        "champion": "LeBlanc",
+        "role": "mid",
+        "level": 17,
+        "kills": 11,
+        "deaths": 0,
+        "assists": 6,
+        "cs": 209,
+        "gold": 13500
+      },
+      {
+        "name": "biGmicahlE",
+        "champion": "Kog'Maw",
+        "role": "bot",
+        "level": 14,
+        "kills": 15,
+        "deaths": 3,
+        "assists": 6,
+        "cs": 211,
+        "gold": 14500
+      },
+      {
+        "name": "Serein",
+        "champion": "Blitzcrank",
+        "role": "support",
+        "level": 14,
+        "kills": 2,
+        "deaths": 1,
+        "assists": 17,
+        "cs": 36,
+        "gold": 8433
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Megawatt",
+        "champion": "Nasus",
+        "role": "top",
+        "level": 16,
+        "kills": 2,
+        "deaths": 5,
+        "assists": 2,
+        "cs": 200,
+        "gold": 8648
+      },
+      {
+        "name": "JKLgoat",
+        "champion": "Xin Zhao",
+        "role": "jungle",
+        "level": 12,
+        "kills": 0,
+        "deaths": 6,
+        "assists": 1,
+        "cs": 134,
+        "gold": 7164
+      },
+      {
+        "name": "Lord Mountain",
+        "champion": "Hwei",
+        "role": "mid",
+        "level": 13,
+        "kills": 1,
+        "deaths": 6,
+        "assists": 0,
+        "cs": 150,
+        "gold": 7473
+      },
+      {
+        "name": "Zane",
+        "champion": "Yunara",
+        "role": "bot",
+        "level": 13,
+        "kills": 1,
+        "deaths": 9,
+        "assists": 2,
+        "cs": 202,
+        "gold": 9746
+      },
+      {
+        "name": "Jushie",
+        "champion": "Singed",
+        "role": "support",
+        "level": 11,
+        "kills": 3,
+        "deaths": 10,
+        "assists": 2,
+        "cs": 28,
+        "gold": 7358
+      }
+    ]
+  },
+  {
+    "image": "image7.png",
+    "date": "2026-03-01",
+    "duration": "23:44",
+    "team1": "Super Kracked Team (SKT)",
+    "team2": "Animal fries in the bag",
+    "winner": "Super Kracked Team (SKT)",
+    "team1_score": {
+      "kills": 31,
+      "deaths": 10,
+      "assists": 33,
+      "gold": 50364
+    },
+    "team2_score": {
+      "kills": 10,
+      "deaths": 31,
+      "assists": 13,
+      "gold": 39448
+    },
+    "team1_players": [
+      {
+        "name": "MaTou",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 15,
+        "kills": 5,
+        "deaths": 2,
+        "assists": 3,
+        "cs": 156,
+        "gold": 9203
+      },
+      {
+        "name": "MoBamla",
+        "champion": "Gwen",
+        "role": "top",
+        "level": 17,
+        "kills": 16,
+        "deaths": 0,
+        "assists": 1,
+        "cs": 213,
+        "gold": 14294
+      },
+      {
+        "name": "tokgii",
+        "champion": "Pantheon",
+        "role": "jungle",
+        "level": 13,
+        "kills": 2,
+        "deaths": 4,
+        "assists": 6,
+        "cs": 144,
+        "gold": 8553
+      },
+      {
+        "name": "BizzareMagician",
+        "champion": "Sivir",
+        "role": "bot",
+        "level": 13,
+        "kills": 7,
+        "deaths": 2,
+        "assists": 7,
+        "cs": 175,
+        "gold": 11281
+      },
+      {
+        "name": "apeng",
+        "champion": "Yuumi",
+        "role": "support",
+        "level": 12,
+        "kills": 1,
+        "deaths": 2,
+        "assists": 16,
+        "cs": 2,
+        "gold": 7033
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Zane",
+        "champion": "Dr. Mundo",
+        "role": "top",
+        "level": 13,
+        "kills": 0,
+        "deaths": 10,
+        "assists": 2,
+        "cs": 126,
+        "gold": 6425
+      },
+      {
+        "name": "JKLgoat",
+        "champion": "Kha'Zix",
+        "role": "jungle",
+        "level": 11,
+        "kills": 4,
+        "deaths": 6,
+        "assists": 1,
+        "cs": 141,
+        "gold": 9001
+      },
+      {
+        "name": "Lord Mountain",
+        "champion": "Mel",
+        "role": "mid",
+        "level": 14,
+        "kills": 3,
+        "deaths": 3,
+        "assists": 1,
+        "cs": 200,
+        "gold": 9315
+      },
+      {
+        "name": "Megawatt",
+        "champion": "Swain",
+        "role": "bot",
+        "level": 12,
+        "kills": 0,
+        "deaths": 4,
+        "assists": 5,
+        "cs": 186,
+        "gold": 8203
+      },
+      {
+        "name": "Jushie",
+        "champion": "Sylas",
+        "role": "support",
+        "level": 10,
+        "kills": 3,
+        "deaths": 8,
+        "assists": 4,
+        "cs": 26,
+        "gold": 6504
+      }
+    ]
+  },
+  {
+    "image": "image5.png",
+    "date": "2026-02-28",
+    "duration": "25:49",
+    "team1": "smiling friends",
+    "team2": "Berkeley Legends Gaming (BLG)",
+    "winner": "smiling friends",
+    "team1_score": {
+      "kills": 23,
+      "deaths": 10,
+      "assists": 41,
+      "gold": 56448
+    },
+    "team2_score": {
+      "kills": 10,
+      "deaths": 23,
+      "assists": 12,
+      "gold": 41188
+    },
+    "team1_players": [
+      {
+        "name": "carb",
+        "champion": "Sion",
+        "role": "top",
+        "level": 16,
+        "kills": 0,
+        "deaths": 2,
+        "assists": 10,
+        "cs": 184,
+        "gold": 9810
+      },
+      {
+        "name": "Naga1736",
+        "champion": "Viego",
+        "role": "jungle",
+        "level": 16,
+        "kills": 14,
+        "deaths": 1,
+        "assists": 3,
+        "cs": 222,
+        "gold": 15052
+      },
+      {
+        "name": "IXX",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 17,
+        "kills": 7,
+        "deaths": 0,
+        "assists": 3,
+        "cs": 255,
+        "gold": 13033
+      },
+      {
+        "name": "biGmicahlE",
+        "champion": "Ashe",
+        "role": "bot",
+        "level": 15,
+        "kills": 1,
+        "deaths": 3,
+        "assists": 11,
+        "cs": 198,
+        "gold": 10316
+      },
+      {
+        "name": "Serein",
+        "champion": "Nasus",
+        "role": "support",
+        "level": 12,
+        "kills": 1,
+        "deaths": 4,
+        "assists": 14,
+        "cs": 43,
+        "gold": 8237
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Devvvvvvv",
+        "champion": "Kennen",
+        "role": "top",
+        "level": 15,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 3,
+        "cs": 175,
+        "gold": 8295
+      },
+      {
+        "name": "鍥而不捨",
+        "champion": "Nocturne",
+        "role": "jungle",
+        "level": 13,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 1,
+        "cs": 155,
+        "gold": 8119
+      },
+      {
+        "name": "原神职业哥",
+        "champion": "Malzahar",
+        "role": "mid",
+        "level": 13,
+        "kills": 0,
+        "deaths": 5,
+        "assists": 0,
+        "cs": 182,
+        "gold": 7258
+      },
+      {
+        "name": "IcyDraggy",
+        "champion": "Samira",
+        "role": "bot",
+        "level": 15,
+        "kills": 6,
+        "deaths": 4,
+        "assists": 2,
+        "cs": 222,
+        "gold": 11012
+      },
+      {
+        "name": "Trispy",
+        "champion": "Nautilus",
+        "role": "support",
+        "level": 11,
+        "kills": 2,
+        "deaths": 4,
+        "assists": 6,
+        "cs": 15,
+        "gold": 6504
+      }
+    ]
+  },
+  {
+    "image": "image19.png",
+    "date": "2026-03-18",
+    "duration": "27:57",
+    "team1": "Berkeley Legends Gaming (BLG)",
+    "team2": "Animal fries in the bag",
+    "winner": "Animal fries in the bag",
+    "team1_score": {
+      "kills": 10,
+      "deaths": 29,
+      "assists": 16,
+      "gold": 42488
+    },
+    "team2_score": {
+      "kills": 29,
+      "deaths": 11,
+      "assists": 48,
+      "gold": 56397
+    },
+    "team1_players": [
+      {
+        "name": "IcyDraggy",
+        "champion": "Caitlyn",
+        "role": "top",
+        "level": 13,
+        "kills": 2,
+        "deaths": 5,
+        "assists": 1,
+        "cs": 208,
+        "gold": 9605
+      },
+      {
+        "name": "Devvvvvvv",
+        "champion": "Ambessa",
+        "role": "jungle",
+        "level": 15,
+        "kills": 3,
+        "deaths": 9,
+        "assists": 4,
+        "cs": 164,
+        "gold": 8503
+      },
+      {
+        "name": "鍥而不捨",
+        "champion": "Pantheon",
+        "role": "mid",
+        "level": 13,
+        "kills": 5,
+        "deaths": 4,
+        "assists": 3,
+        "cs": 159,
+        "gold": 10772
+      },
+      {
+        "name": "原神职业哥",
+        "champion": "Lissandra",
+        "role": "bot",
+        "level": 14,
+        "kills": 0,
+        "deaths": 5,
+        "assists": 3,
+        "cs": 163,
+        "gold": 7440
+      },
+      {
+        "name": "Trispy",
+        "champion": "Braum",
+        "role": "support",
+        "level": 11,
+        "kills": 0,
+        "deaths": 6,
+        "assists": 5,
+        "cs": 11,
+        "gold": 6168
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Megawatt",
+        "champion": "Jax",
+        "role": "top",
+        "level": 16,
+        "kills": 7,
+        "deaths": 6,
+        "assists": 7,
+        "cs": 169,
+        "gold": 11134
+      },
+      {
+        "name": "JKLgoat",
+        "champion": "Viego",
+        "role": "jungle",
+        "level": 16,
+        "kills": 2,
+        "deaths": 2,
+        "assists": 11,
+        "cs": 235,
+        "gold": 12141
+      },
+      {
+        "name": "Zane",
+        "champion": "Vex",
+        "role": "bot",
+        "level": 16,
+        "kills": 13,
+        "deaths": 1,
+        "assists": 5,
+        "cs": 184,
+        "gold": 13676
+      },
+      {
+        "name": "Lord Mountain",
+        "champion": "Mel",
+        "role": "mid",
+        "level": 14,
+        "kills": 6,
+        "deaths": 0,
+        "assists": 9,
+        "cs": 199,
+        "gold": 11859
+      },
+      {
+        "name": "Jushie",
+        "champion": "Galio",
+        "role": "support",
+        "level": 13,
+        "kills": 1,
+        "deaths": 2,
+        "assists": 16,
+        "cs": 24,
+        "gold": 7587
+      }
+    ]
+  },
+  {
+    "image": "image13.png",
+    "date": null,
+    "duration": "33:17",
+    "team1": "Team 4",
+    "team2": "Animal fries in the bag",
+    "winner": "Team 4",
+    "team1_score": {
+      "kills": 46,
+      "deaths": 26,
+      "assists": 98,
+      "gold": 73454
+    },
+    "team2_score": {
+      "kills": 26,
+      "deaths": 46,
+      "assists": 41,
+      "gold": 64699
+    },
+    "team1_players": [
+      {
+        "name": "NightingG4le",
+        "champion": "Aatrox",
+        "role": "top",
+        "level": 18,
+        "kills": 5,
+        "deaths": 3,
+        "assists": 8,
+        "cs": null,
+        "gold": 12582
+      },
+      {
+        "name": "theory",
+        "champion": "Lee Sin",
+        "role": "jungle",
+        "level": 18,
+        "kills": 17,
+        "deaths": 4,
+        "assists": 19,
+        "cs": null,
+        "gold": 18406
+      },
+      {
+        "name": "Zadeon",
+        "champion": "Zed",
+        "role": "mid",
+        "level": 16,
+        "kills": 10,
+        "deaths": 9,
+        "assists": 17,
+        "cs": null,
+        "gold": 15432
+      },
+      {
+        "name": "RewJaMaiYoong",
+        "champion": "Ashe",
+        "role": "bot",
+        "level": 15,
+        "kills": 9,
+        "deaths": 4,
+        "assists": 22,
+        "cs": null,
+        "gold": 14988
+      },
+      {
+        "name": "hyunah",
+        "champion": "Zyra",
+        "role": "support",
+        "level": 15,
+        "kills": 5,
+        "deaths": 6,
+        "assists": 32,
+        "cs": null,
+        "gold": 12046
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Megawatt",
+        "champion": "Tahm Kench",
+        "role": "top",
+        "level": 18,
+        "kills": 5,
+        "deaths": 6,
+        "assists": 5,
+        "cs": null,
+        "gold": 12745
+      },
+      {
+        "name": "JKLgoat",
+        "champion": "Shen",
+        "role": "jungle",
+        "level": 17,
+        "kills": 8,
+        "deaths": 7,
+        "assists": 6,
+        "cs": null,
+        "gold": 15145
+      },
+      {
+        "name": "Jushie",
+        "champion": "Galio",
+        "role": "mid",
+        "level": 16,
+        "kills": 5,
+        "deaths": 9,
+        "assists": 11,
+        "cs": null,
+        "gold": 11244
+      },
+      {
+        "name": "Zane",
+        "champion": "Samira",
+        "role": "bot",
+        "level": 17,
+        "kills": 8,
+        "deaths": 11,
+        "assists": 5,
+        "cs": null,
+        "gold": 16198
+      },
+      {
+        "name": "Lord Mountain",
+        "champion": "Nautilus",
+        "role": "support",
+        "level": 14,
+        "kills": 0,
+        "deaths": 13,
+        "assists": 14,
+        "cs": null,
+        "gold": 9367
+      }
+    ]
+  },
+  {
+    "image": "image4.png",
+    "date": null,
+    "duration": "34:21",
+    "team1": "Super Kracked Team (SKT)",
+    "team2": "5 Chuds and a Dream",
+    "winner": "Super Kracked Team (SKT)",
+    "team1_score": {
+      "kills": 21,
+      "deaths": 11,
+      "assists": 54,
+      "gold": 65104
+    },
+    "team2_score": {
+      "kills": 11,
+      "deaths": 21,
+      "assists": 17,
+      "gold": 56949
+    },
+    "team1_players": [
+      {
+        "name": "MoBamla",
+        "champion": "Zaahen",
+        "role": "top",
+        "level": 20,
+        "kills": 8,
+        "deaths": 1,
+        "assists": 12,
+        "cs": null,
+        "gold": 17095
+      },
+      {
+        "name": "tokgii",
+        "champion": "Jarvan IV",
+        "role": "jungle",
+        "level": 17,
+        "kills": 4,
+        "deaths": 3,
+        "assists": 12,
+        "cs": null,
+        "gold": 13490
+      },
+      {
+        "name": "MaTou",
+        "champion": "Galio",
+        "role": "mid",
+        "level": 17,
+        "kills": 3,
+        "deaths": 0,
+        "assists": 14,
+        "cs": null,
+        "gold": 11885
+      },
+      {
+        "name": "BizzareMagician",
+        "champion": "Ashe",
+        "role": "bot",
+        "level": 15,
+        "kills": 4,
+        "deaths": 2,
+        "assists": 9,
+        "cs": null,
+        "gold": 14142
+      },
+      {
+        "name": "apeng",
+        "champion": "Brand",
+        "role": "support",
+        "level": 14,
+        "kills": 2,
+        "deaths": 5,
+        "assists": 7,
+        "cs": null,
+        "gold": 8492
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "PufferfishLegend",
+        "champion": "Sion",
+        "role": "top",
+        "level": 16,
+        "kills": 0,
+        "deaths": 8,
+        "assists": 0,
+        "cs": null,
+        "gold": 9349
+      },
+      {
+        "name": "bakudeku",
+        "champion": "Amumu",
+        "role": "jungle",
+        "level": 15,
+        "kills": 2,
+        "deaths": 2,
+        "assists": 5,
+        "cs": null,
+        "gold": 11414
+      },
+      {
+        "name": "JackeyLoveN1yyds",
+        "champion": "Sylas",
+        "role": "mid",
+        "level": 17,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 3,
+        "cs": null,
+        "gold": 11770
+      },
+      {
+        "name": "underworldvisito",
+        "champion": "Lucian",
+        "role": "bot",
+        "level": 15,
+        "kills": 7,
+        "deaths": 3,
+        "assists": 2,
+        "cs": null,
+        "gold": 16749
+      },
+      {
+        "name": "Ken",
+        "champion": "Yuumi",
+        "role": "support",
+        "level": 14,
+        "kills": 1,
+        "deaths": 3,
+        "assists": 7,
+        "cs": null,
+        "gold": 8037
+      }
+    ]
+  },
+  {
+    "image": "image8.png",
+    "date": null,
+    "duration": "22:53",
+    "team1": "Cheeses and Cracker",
+    "team2": "5 Chuds and a Dream",
+    "winner": "Cheeses and Cracker",
+    "team1_score": {
+      "kills": 12,
+      "deaths": 6,
+      "assists": 15,
+      "gold": 46165
+    },
+    "team2_score": {
+      "kills": 6,
+      "deaths": 12,
+      "assists": 11,
+      "gold": 39514
+    },
+    "team1_players": [
+      {
+        "name": "lost in sauce",
+        "champion": "Gwen",
+        "role": "top",
+        "level": 16,
+        "kills": 3,
+        "deaths": 3,
+        "assists": 1,
+        "cs": null,
+        "gold": 11199
+      },
+      {
+        "name": "たくとくたっく",
+        "champion": "Maokai",
+        "role": "jungle",
+        "level": 12,
+        "kills": 0,
+        "deaths": 1,
+        "assists": 4,
+        "cs": null,
+        "gold": 7471
+      },
+      {
+        "name": "小幸運",
+        "champion": "Veigar",
+        "role": "mid",
+        "level": 18,
+        "kills": 4,
+        "deaths": 1,
+        "assists": 4,
+        "cs": null,
+        "gold": 10243
+      },
+      {
+        "name": "lilac",
+        "champion": "Kalista",
+        "role": "bot",
+        "level": 16,
+        "kills": 5,
+        "deaths": 0,
+        "assists": 4,
+        "cs": null,
+        "gold": 11442
+      },
+      {
+        "name": "JetCracker",
+        "champion": "Braum",
+        "role": "support",
+        "level": 11,
+        "kills": 0,
+        "deaths": 1,
+        "assists": 2,
+        "cs": null,
+        "gold": 5810
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "PufferfishLegend",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 14,
+        "kills": 3,
+        "deaths": 3,
+        "assists": 1,
+        "cs": null,
+        "gold": 6487
+      },
+      {
+        "name": "bakudeku",
+        "champion": "Xin Zhao",
+        "role": "jungle",
+        "level": 13,
+        "kills": 0,
+        "deaths": 2,
+        "assists": 5,
+        "cs": null,
+        "gold": 8461
+      },
+      {
+        "name": "JackeyLoveN1yyds",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 13,
+        "kills": 1,
+        "deaths": 3,
+        "assists": 0,
+        "cs": null,
+        "gold": 8675
+      },
+      {
+        "name": "underworldvisito",
+        "champion": "Smolder",
+        "role": "bot",
+        "level": 15,
+        "kills": 2,
+        "deaths": 2,
+        "assists": 1,
+        "cs": null,
+        "gold": 11976
+      },
+      {
+        "name": "Ken",
+        "champion": "Milio",
+        "role": "support",
+        "level": 11,
+        "kills": 0,
+        "deaths": 2,
+        "assists": 4,
+        "cs": null,
+        "gold": 3915
+      }
+    ]
+  },
+  {
+    "image": "image11.png",
+    "date": null,
+    "duration": "32:35",
+    "team1": "Super Kracked Team (SKT)",
+    "team2": "smiling friends",
+    "winner": "Super Kracked Team (SKT)",
+    "team1_score": {
+      "kills": 33,
+      "deaths": 16,
+      "assists": 48,
+      "gold": 65766
+    },
+    "team2_score": {
+      "kills": 16,
+      "deaths": 33,
+      "assists": 15,
+      "gold": 61461
+    },
+    "team1_players": [
+      {
+        "name": "MoBamla",
+        "champion": "Gwen",
+        "role": "top",
+        "level": 19,
+        "kills": 21,
+        "deaths": 0,
+        "assists": 3,
+        "cs": null,
+        "gold": 19868
+      },
+      {
+        "name": "tokgii",
+        "champion": "Poppy",
+        "role": "jungle",
+        "level": 17,
+        "kills": 4,
+        "deaths": 6,
+        "assists": 5,
+        "cs": null,
+        "gold": 10659
+      },
+      {
+        "name": "MaTou",
+        "champion": "Morgana",
+        "role": "mid",
+        "level": 18,
+        "kills": 1,
+        "deaths": 2,
+        "assists": 11,
+        "cs": null,
+        "gold": 11481
+      },
+      {
+        "name": "BizzareMagician",
+        "champion": "Sivir",
+        "role": "bot",
+        "level": 16,
+        "kills": 6,
+        "deaths": 5,
+        "assists": 11,
+        "cs": null,
+        "gold": 14621
+      },
+      {
+        "name": "apeng",
+        "champion": "Yuumi",
+        "role": "support",
+        "level": 15,
+        "kills": 1,
+        "deaths": 3,
+        "assists": 18,
+        "cs": null,
+        "gold": 9137
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "carb",
+        "champion": "Swain",
+        "role": "top",
+        "level": 16,
+        "kills": 0,
+        "deaths": 11,
+        "assists": 1,
+        "cs": null,
+        "gold": 8330
+      },
+      {
+        "name": "Naga1736",
+        "champion": "Shen",
+        "role": "jungle",
+        "level": 15,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 5,
+        "cs": null,
+        "gold": 10319
+      },
+      {
+        "name": "IXX",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 17,
+        "kills": 8,
+        "deaths": 3,
+        "assists": 2,
+        "cs": null,
+        "gold": 15831
+      },
+      {
+        "name": "biGmicahlE",
+        "champion": "Draven",
+        "role": "bot",
+        "level": 16,
+        "kills": 7,
+        "deaths": 4,
+        "assists": 2,
+        "cs": null,
+        "gold": 19021
+      },
+      {
+        "name": "Serein",
+        "champion": "Ashe",
+        "role": "support",
+        "level": 13,
+        "kills": 0,
+        "deaths": 10,
+        "assists": 5,
+        "cs": null,
+        "gold": 7960
+      }
+    ]
+  },
+  {
+    "image": "image12.png",
+    "date": null,
+    "duration": "39:15",
+    "team1": "5 Chuds and a Dream",
+    "team2": "Team 4",
+    "winner": "5 Chuds and a Dream",
+    "team1_score": {
+      "kills": 25,
+      "deaths": 13,
+      "assists": 51,
+      "gold": 76381
+    },
+    "team2_score": {
+      "kills": 13,
+      "deaths": 25,
+      "assists": 12,
+      "gold": 66240
+    },
+    "team1_players": [
+      {
+        "name": "PufferfishLegend",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 20,
+        "kills": 0,
+        "deaths": 4,
+        "assists": 10,
+        "cs": null,
+        "gold": 12366
+      },
+      {
+        "name": "bakudeku",
+        "champion": "Dr. Mundo",
+        "role": "jungle",
+        "level": 18,
+        "kills": 6,
+        "deaths": 1,
+        "assists": 8,
+        "cs": null,
+        "gold": 17436
+      },
+      {
+        "name": "JackeyLoveN1yyds",
+        "champion": "Viktor",
+        "role": "mid",
+        "level": 18,
+        "kills": 5,
+        "deaths": 7,
+        "assists": 5,
+        "cs": null,
+        "gold": 14094
+      },
+      {
+        "name": "underworldvisito",
+        "champion": "Tristana",
+        "role": "bot",
+        "level": 17,
+        "kills": 13,
+        "deaths": 1,
+        "assists": 7,
+        "cs": null,
+        "gold": 21553
+      },
+      {
+        "name": "Ken",
+        "champion": "Yuumi",
+        "role": "support",
+        "level": 17,
+        "kills": 1,
+        "deaths": 0,
+        "assists": 21,
+        "cs": null,
+        "gold": 10932
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "NightingG4le",
+        "champion": "Zaahen",
+        "role": "top",
+        "level": 20,
+        "kills": 4,
+        "deaths": 3,
+        "assists": 2,
+        "cs": null,
+        "gold": 16886
+      },
+      {
+        "name": "theory",
+        "champion": "Lee Sin",
+        "role": "jungle",
+        "level": 17,
+        "kills": 3,
+        "deaths": 6,
+        "assists": 3,
+        "cs": null,
+        "gold": 14338
+      },
+      {
+        "name": "Zadeon",
+        "champion": "Fizz",
+        "role": "mid",
+        "level": 17,
+        "kills": 3,
+        "deaths": 4,
+        "assists": 3,
+        "cs": null,
+        "gold": 12424
+      },
+      {
+        "name": "RewJaMaiYoong",
+        "champion": "Jinx",
+        "role": "bot",
+        "level": 16,
+        "kills": 1,
+        "deaths": 7,
+        "assists": 1,
+        "cs": null,
+        "gold": 13084
+      },
+      {
+        "name": "hyunah",
+        "champion": "Zyra",
+        "role": "support",
+        "level": 14,
+        "kills": 2,
+        "deaths": 5,
+        "assists": 3,
+        "cs": null,
+        "gold": 9508
+      }
+    ]
+  },
+  {
+    "image": "image15.png",
+    "date": "2026-03-15",
+    "duration": "30:58",
+    "team1": "5 Chuds and a Dream",
+    "team2": "Berkeley Legends Gaming (BLG)",
+    "winner": "5 Chuds and a Dream",
+    "team1_score": {
+      "kills": 22,
+      "deaths": 8,
+      "assists": 63,
+      "gold": 61021
+    },
+    "team2_score": {
+      "kills": 8,
+      "deaths": 22,
+      "assists": 9,
+      "gold": 50262
+    },
+    "team1_players": [
+      {
+        "name": "Ken",
+        "champion": "Janna",
+        "role": "support",
+        "level": 13,
+        "kills": 2,
+        "deaths": 1,
+        "assists": 7,
+        "cs": 140,
+        "gold": 8844
+      },
+      {
+        "name": "PufferfishLegend",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 16,
+        "kills": 1,
+        "deaths": 3,
+        "assists": 12,
+        "cs": 140,
+        "gold": 8396
+      },
+      {
+        "name": "bakudeku",
+        "champion": "Xin Zhao",
+        "role": "jungle",
+        "level": 16,
+        "kills": 5,
+        "deaths": 2,
+        "assists": 10,
+        "cs": 220,
+        "gold": 12808
+      },
+      {
+        "name": "JackeyLoveN1yyds",
+        "champion": "Viktor",
+        "role": "mid",
+        "level": 16,
+        "kills": 5,
+        "deaths": 2,
+        "assists": 12,
+        "cs": 376,
+        "gold": 14097
+      },
+      {
+        "name": "underworldvisito",
+        "champion": "Sivir",
+        "role": "bot",
+        "level": 15,
+        "kills": 9,
+        "deaths": 0,
+        "assists": 11,
+        "cs": 302,
+        "gold": 16876
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Devvvvvvv",
+        "champion": "Ambessa",
+        "role": "top",
+        "level": 17,
+        "kills": 3,
+        "deaths": 4,
+        "assists": 2,
+        "cs": 247,
+        "gold": 11888
+      },
+      {
+        "name": "鍥而不捨",
+        "champion": "Zaahen",
+        "role": "jungle",
+        "level": 16,
+        "kills": 2,
+        "deaths": 4,
+        "assists": 1,
+        "cs": 248,
+        "gold": 13220
+      },
+      {
+        "name": "原神职业哥",
+        "champion": "Malzahar",
+        "role": "mid",
+        "level": 14,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 2,
+        "cs": 217,
+        "gold": 9023
+      },
+      {
+        "name": "IcyDraggy",
+        "champion": "Caitlyn",
+        "role": "bot",
+        "level": 13,
+        "kills": 1,
+        "deaths": 4,
+        "assists": 2,
+        "cs": 227,
+        "gold": 9623
+      },
+      {
+        "name": "Trispy",
+        "champion": "Braum",
+        "role": "support",
+        "level": 12,
+        "kills": 1,
+        "deaths": 5,
+        "assists": 2,
+        "cs": null,
+        "gold": 6508
+      }
+    ]
+  },
+  {
+    "image": "image18.png",
+    "date": null,
+    "duration": "34:17",
+    "team1": "Cheeses and Cracker",
+    "team2": "Super Kracked Team (SKT)",
+    "winner": "Cheeses and Cracker",
+    "team1_score": {
+      "kills": 34,
+      "deaths": 17,
+      "assists": 56,
+      "gold": 67912
+    },
+    "team2_score": {
+      "kills": 17,
+      "deaths": 34,
+      "assists": 27,
+      "gold": 60907
+    },
+    "team1_players": [
+      {
+        "name": "lost in sauce",
+        "champion": "Rumble",
+        "role": "top",
+        "level": 19,
+        "kills": 5,
+        "deaths": 3,
+        "assists": 11,
+        "cs": null,
+        "gold": 14334
+      },
+      {
+        "name": "たくとくたっく",
+        "champion": "Jarvan IV",
+        "role": "jungle",
+        "level": 16,
+        "kills": 3,
+        "deaths": 5,
+        "assists": 13,
+        "cs": null,
+        "gold": 11199
+      },
+      {
+        "name": "小幸運",
+        "champion": "Viktor",
+        "role": "mid",
+        "level": 18,
+        "kills": 1,
+        "deaths": 1,
+        "assists": 9,
+        "cs": null,
+        "gold": 13803
+      },
+      {
+        "name": "IcyDraggy",
+        "champion": "Caitlyn",
+        "role": "bot",
+        "level": 16,
+        "kills": 16,
+        "deaths": 5,
+        "assists": 5,
+        "cs": null,
+        "gold": 16515
+      },
+      {
+        "name": "JetCracker",
+        "champion": "Zyra",
+        "role": "support",
+        "level": 14,
+        "kills": 7,
+        "deaths": 3,
+        "assists": 16,
+        "cs": null,
+        "gold": 11479
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "MoBamla",
+        "champion": "Dr. Mundo",
+        "role": "top",
+        "level": 17,
+        "kills": 4,
+        "deaths": 4,
+        "assists": 2,
+        "cs": null,
+        "gold": 12325
+      },
+      {
+        "name": "tokgii",
+        "champion": "Poppy",
+        "role": "jungle",
+        "level": 16,
+        "kills": 2,
+        "deaths": 7,
+        "assists": 7,
+        "cs": null,
+        "gold": 9879
+      },
+      {
+        "name": "MaTou",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 17,
+        "kills": 5,
+        "deaths": 7,
+        "assists": 5,
+        "cs": null,
+        "gold": 13102
+      },
+      {
+        "name": "BizzareMagician",
+        "champion": "Corki",
+        "role": "bot",
+        "level": 16,
+        "kills": 4,
+        "deaths": 9,
+        "assists": 3,
+        "cs": null,
+        "gold": 13231
+      },
+      {
+        "name": "apeng",
+        "champion": "Brand",
+        "role": "support",
+        "level": 14,
+        "kills": 0,
+        "deaths": 13,
+        "assists": 4,
+        "cs": null,
+        "gold": 7770
+      }
+    ]
+  },
+  {
+    "image": "image.png",
+    "date": null,
+    "duration": "30:37",
+    "team1": "Berkeley Legends Gaming (BLG)",
+    "team2": "Team 4",
+    "winner": "Berkeley Legends Gaming (BLG)",
+    "team1_score": {
+      "kills": 20,
+      "deaths": 19,
+      "assists": 54,
+      "gold": 63531
+    },
+    "team2_score": {
+      "kills": 19,
+      "deaths": 20,
+      "assists": 17,
+      "gold": 38009
+    },
+    "team1_players": [
+      {
+        "name": "Devvvvvvv",
+        "champion": "Renekton",
+        "role": "top",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 17785
+      },
+      {
+        "name": "鍥而不捨",
+        "champion": "Graves",
+        "role": "jungle",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 16413
+      },
+      {
+        "name": "原神职业哥",
+        "champion": "Malzahar",
+        "role": "mid",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 11517
+      },
+      {
+        "name": "IcyDraggy",
+        "champion": "Ashe",
+        "role": "bot",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 8976
+      },
+      {
+        "name": "Trispy",
+        "champion": "Nautilus",
+        "role": "support",
+        "level": 12,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 9451
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "NightingG4le",
+        "champion": "K'Sante",
+        "role": "top",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 15344
+      },
+      {
+        "name": "theory",
+        "champion": "Elise",
+        "role": "jungle",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 13041
+      },
+      {
+        "name": "Zadeon",
+        "champion": "Veigar",
+        "role": "mid",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 11449
+      },
+      {
+        "name": "RewJaMaiYoong",
+        "champion": "Caitlyn",
+        "role": "bot",
+        "level": 12,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 4431
+      },
+      {
+        "name": "hyunah",
+        "champion": "Milio",
+        "role": "support",
+        "level": 12,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 7499
+      }
+    ]
+  },
+  {
+    "image": "image2.png",
+    "date": null,
+    "duration": "30:24",
+    "team1": "Fries in the Bag",
+    "team2": "Cheeses and Cracker",
+    "winner": "Fries in the Bag",
+    "team1_score": {
+      "kills": 35,
+      "deaths": 20,
+      "assists": 54,
+      "gold": 66251
+    },
+    "team2_score": {
+      "kills": 20,
+      "deaths": 35,
+      "assists": 46,
+      "gold": 37300
+    },
+    "team1_players": [
+      {
+        "name": "FrostyTheSnowman",
+        "champion": "Malphite",
+        "role": "top",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Chad Te Employee",
+        "champion": "Volibear",
+        "role": "jungle",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Sephere",
+        "champion": "Irelia",
+        "role": "mid",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "DreadEye",
+        "champion": "Jhin",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "SakuraMochii",
+        "champion": "Morgana",
+        "role": "support",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "lost in sauce",
+        "champion": "Aatrox",
+        "role": "top",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "たくとくたっく",
+        "champion": "Maokai",
+        "role": "jungle",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "小幸運",
+        "champion": "Veigar",
+        "role": "mid",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "lilac",
+        "champion": "Xayah",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "JetCracker",
+        "champion": "Leona",
+        "role": "support",
+        "level": 11,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ]
+  },
+  {
+    "image": "image6.png",
+    "date": null,
+    "duration": "30:24",
+    "team1": "Fries in the Bag",
+    "team2": "Team 4",
+    "winner": "Fries in the Bag",
+    "team1_score": {
+      "kills": 37,
+      "deaths": 23,
+      "assists": 33,
+      "gold": 70497
+    },
+    "team2_score": {
+      "kills": 23,
+      "deaths": 37,
+      "assists": 29,
+      "gold": 58379
+    },
+    "team1_players": [
+      {
+        "name": "FrostyTheSnowman",
+        "champion": "Mordekaiser",
+        "role": "top",
+        "level": 18,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 13369
+      },
+      {
+        "name": "Chad Te Employee",
+        "champion": "Fizz",
+        "role": "jungle",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 12158
+      },
+      {
+        "name": "Sephere",
+        "champion": "Irelia",
+        "role": "mid",
+        "level": 18,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 18502
+      },
+      {
+        "name": "DreadEye",
+        "champion": "Lucian",
+        "role": "bot",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 17043
+      },
+      {
+        "name": "SakuraMochii",
+        "champion": "Nami",
+        "role": "support",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": 8151
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "NightingG4le",
+        "champion": "Ahri",
+        "role": "mid",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "theory",
+        "champion": "Graves",
+        "role": "jungle",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Zadeon",
+        "champion": "Gwen",
+        "role": "top",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "RewJaMaiYoong",
+        "champion": "Sivir",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "hyunah",
+        "champion": "Karma",
+        "role": "support",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ]
+  },
+  {
+    "image": "image9.png",
+    "date": null,
+    "duration": "24:22",
+    "team1": "Fries in the Bag",
+    "team2": "Berkeley Legends Gaming (BLG)",
+    "winner": "Fries in the Bag",
+    "team1_score": {
+      "kills": 22,
+      "deaths": 7,
+      "assists": 16,
+      "gold": 51963
+    },
+    "team2_score": {
+      "kills": 7,
+      "deaths": 22,
+      "assists": 6,
+      "gold": 37001
+    },
+    "team1_players": [
+      {
+        "name": "FrostyTheSnowman",
+        "champion": "Aatrox",
+        "role": "top",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Chad Te Employee",
+        "champion": "Rengar",
+        "role": "jungle",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Sephere",
+        "champion": "Cassiopeia",
+        "role": "mid",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "DreadEye",
+        "champion": "Jhin",
+        "role": "bot",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "SakuraMochii",
+        "champion": "Karma",
+        "role": "support",
+        "level": 11,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Devvvvvvv",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "鍥而不捨",
+        "champion": "Jarvan IV",
+        "role": "jungle",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "原神职业哥",
+        "champion": "Veigar",
+        "role": "mid",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "IcyDraggy",
+        "champion": "Ashe",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Trispy",
+        "champion": "Seraphine",
+        "role": "support",
+        "level": 12,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ]
+  },
+  {
+    "image": "image10.png",
+    "date": null,
+    "duration": "43:00",
+    "team1": "Cheeses and Cracker",
+    "team2": "Animal fries in the bag",
+    "winner": "Cheeses and Cracker",
+    "team1_score": {
+      "kills": 40,
+      "deaths": 28,
+      "assists": 42,
+      "gold": 87692
+    },
+    "team2_score": {
+      "kills": 28,
+      "deaths": 40,
+      "assists": 45,
+      "gold": 82906
+    },
+    "team1_players": [
+      {
+        "name": "lost in sauce",
+        "champion": "Jax",
+        "role": "top",
+        "level": 20,
+        "kills": 21,
+        "deaths": 5,
+        "assists": 6,
+        "cs": null,
+        "gold": 23586
+      },
+      {
+        "name": "たくとくたっく",
+        "champion": "Amumu",
+        "role": "jungle",
+        "level": 17,
+        "kills": 2,
+        "deaths": 8,
+        "assists": 11,
+        "cs": null,
+        "gold": 13918
+      },
+      {
+        "name": "小幸運",
+        "champion": "Veigar",
+        "role": "mid",
+        "level": 18,
+        "kills": 6,
+        "deaths": 4,
+        "assists": 8,
+        "cs": null,
+        "gold": 11186
+      },
+      {
+        "name": "lilac",
+        "champion": "Corki",
+        "role": "bot",
+        "level": 18,
+        "kills": 7,
+        "deaths": 4,
+        "assists": 6,
+        "cs": null,
+        "gold": 10882
+      },
+      {
+        "name": "JetCracker",
+        "champion": "Pantheon",
+        "role": "support",
+        "level": 15,
+        "kills": 4,
+        "deaths": 7,
+        "assists": 11,
+        "cs": null,
+        "gold": 13120
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "Megawatt",
+        "champion": "Garen",
+        "role": "top",
+        "level": 20,
+        "kills": 11,
+        "deaths": 8,
+        "assists": 9,
+        "cs": null,
+        "gold": 15723
+      },
+      {
+        "name": "JKLgoat",
+        "champion": "Zaahen",
+        "role": "jungle",
+        "level": 18,
+        "kills": 3,
+        "deaths": 10,
+        "assists": 9,
+        "cs": null,
+        "gold": 15723
+      },
+      {
+        "name": "Lord Mountain",
+        "champion": "Xerath",
+        "role": "mid",
+        "level": 19,
+        "kills": 4,
+        "deaths": 7,
+        "assists": 13,
+        "cs": null,
+        "gold": 16913
+      },
+      {
+        "name": "Zane",
+        "champion": "Jhin",
+        "role": "bot",
+        "level": 18,
+        "kills": 5,
+        "deaths": 9,
+        "assists": 9,
+        "cs": null,
+        "gold": 17833
+      },
+      {
+        "name": "Jushie",
+        "champion": "Shaco",
+        "role": "support",
+        "level": 16,
+        "kills": 5,
+        "deaths": 6,
+        "assists": 5,
+        "cs": null,
+        "gold": 12351
+      }
+    ]
+  },
+  {
+    "image": "image14.png",
+    "date": null,
+    "duration": null,
+    "team1": "Fries in the Bag",
+    "team2": "smiling friends",
+    "winner": "Fries in the Bag",
+    "team1_score": {
+      "kills": 31,
+      "deaths": 14,
+      "assists": 65,
+      "gold": 58398
+    },
+    "team2_score": {
+      "kills": 14,
+      "deaths": 31,
+      "assists": 26,
+      "gold": 41657
+    },
+    "team1_players": [
+      {
+        "name": "FrostyTheSnowman",
+        "champion": "Mordekaiser",
+        "role": "top",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "DoomCobG",
+        "champion": "Syndra",
+        "role": "mid",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Sephere",
+        "champion": "Kayn",
+        "role": "jungle",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "DreadEye",
+        "champion": "Ezreal",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "SakuraMochii",
+        "champion": "Karma",
+        "role": "support",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "carb",
+        "champion": "Sion",
+        "role": "top",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Naga1736",
+        "champion": "Nocturne",
+        "role": "jungle",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "IXX",
+        "champion": "Akali",
+        "role": "mid",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "biGmicahlE",
+        "champion": "Kog'Maw",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Serein",
+        "champion": "Alistar",
+        "role": "support",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ]
+  },
+  {
+    "image": "image16.png",
+    "date": null,
+    "duration": "20:24",
+    "team1": "Fries in the Bag",
+    "team2": "5 Chuds and a Dream",
+    "winner": "Fries in the Bag",
+    "team1_score": {
+      "kills": 16,
+      "deaths": 9,
+      "assists": 31,
+      "gold": 53180
+    },
+    "team2_score": {
+      "kills": 9,
+      "deaths": 18,
+      "assists": 12,
+      "gold": 38777
+    },
+    "team1_players": [
+      {
+        "name": "Chad Te Employee",
+        "champion": "Garen",
+        "role": "top",
+        "level": 17,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "FrostyTheSnowman",
+        "champion": "Volibear",
+        "role": "jungle",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Sephere",
+        "champion": "Yone",
+        "role": "mid",
+        "level": 16,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "DreadEye",
+        "champion": "Ezreal",
+        "role": "bot",
+        "level": 15,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "SakuraMochii",
+        "champion": "Yuumi",
+        "role": "support",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ],
+    "team2_players": [
+      {
+        "name": "PufferfishLegend",
+        "champion": "Ornn",
+        "role": "top",
+        "level": 14,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "bakudeku",
+        "champion": "Wukong",
+        "role": "jungle",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "JackeyLoveN1yyds",
+        "champion": "Viktor",
+        "role": "mid",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "underworldvisito",
+        "champion": "Jinx",
+        "role": "bot",
+        "level": 13,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      },
+      {
+        "name": "Ken",
+        "champion": "Janna",
+        "role": "support",
+        "level": 11,
+        "kills": null,
+        "deaths": null,
+        "assists": null,
+        "cs": null,
+        "gold": null
+      }
+    ]
+  }
+]

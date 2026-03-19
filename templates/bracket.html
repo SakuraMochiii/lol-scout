@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Bracket — LOL IMs Info{% endblock %}
+{% block content %}
+
+{# Macro to render a team name as a link if it matches a team in the app #}
+{% macro team_link(name, bold=false, highlight=false) %}
+  {%- set ns = namespace(matched=None) -%}
+  {%- for team in data.teams -%}
+    {%- if team.name == name -%}{%- set ns.matched = team -%}{%- endif -%}
+  {%- endfor -%}
+  {%- if ns.matched -%}
+    <a href="/team/{{ ns.matched.id }}" style="{% if bold %}font-weight:700;{% endif %} color:{% if highlight %}var(--accent){% else %}var(--text){% endif %};">{{ name }}</a>
+  {%- else -%}
+    <span style="{% if bold %}font-weight:700;{% endif %}{% if highlight %} color:var(--accent);{% endif %}">{{ name }}</span>
+  {%- endif -%}
+{% endmacro %}
+
+{# Resolve my team name from my_team_id #}
+{%- set my_team_ns = namespace(name=None) -%}
+{%- if data.meta.my_team_id -%}
+  {%- for team in data.teams -%}
+    {%- if team.id == data.meta.my_team_id -%}{%- set my_team_ns.name = team.name -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+{% if not bracket %}
+<div class="empty-state">
+  <p>No bracket loaded yet.</p>
+  <form method="POST" action="/api/bracket/refresh" style="margin-top:16px; display:flex; gap:8px; justify-content:center; align-items:center;">
+    <input type="text" name="url" class="input" placeholder="Challonge URL (e.g. https://challonge.com/...)" style="width:400px">
+    <button type="submit" class="btn btn-accent">Load Bracket</button>
+  </form>
+</div>
+{% else %}
+
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+  <div>
+    <h1 style="margin-bottom:4px;">{{ bracket.name }}</h1>
+    <span class="muted">{{ bracket.type | title }} — {{ bracket.state | title }}{% if bracket.current_round %} — Round {{ bracket.current_round }} of {{ bracket.total_rounds }}{% endif %}</span>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <a href="{{ bracket.url }}" target="_blank" class="btn btn-sm">View on Challonge</a>
+    <a href="/export/bracket" class="btn btn-sm">Export Bracket</a>
+    <form method="POST" action="/api/bracket/refresh" style="display:inline">
+      <input type="hidden" name="url" value="{{ bracket.url }}">
+      <button type="submit" class="btn btn-sm btn-accent">Refresh</button>
+    </form>
+  </div>
+</div>
+
+{# --- Standings --- #}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-title">Standings</div>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">#</th>
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Team</th>
+        <th style="text-align:center; padding:6px 8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">W</th>
+        <th style="text-align:center; padding:6px 8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">L</th>
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Record</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in bracket.standings %}
+      <tr style="{% if s.name == my_team_ns.name %}background:rgba(99,102,241,0.12);{% endif %}">
+        <td style="padding:6px 8px; border-bottom:1px solid var(--border); color:var(--text-muted);">{{ loop.index }}</td>
+        <td style="padding:6px 8px; border-bottom:1px solid var(--border); font-weight:600;">
+          {{ team_link(s.name, bold=true, highlight=(s.name == my_team_ns.name)) }}
+        </td>
+        <td style="padding:6px 8px; border-bottom:1px solid var(--border); text-align:center; color:var(--green); font-weight:600;">{{ s.wins }}</td>
+        <td style="padding:6px 8px; border-bottom:1px solid var(--border); text-align:center; color:var(--red); font-weight:600;">{{ s.losses }}</td>
+        <td style="padding:6px 8px; border-bottom:1px solid var(--border);">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="width:80px; height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
+              {% if s.wins + s.losses > 0 %}
+              <div style="width:{{ (s.wins / (s.wins + s.losses) * 100)|round }}%; height:100%; background:var(--green); border-radius:4px;"></div>
+              {% endif %}
+            </div>
+            <span class="muted">{{ s.wins }}-{{ s.losses }}</span>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# --- Next Matches --- #}
+{% if bracket.current_round %}
+{% set next_matches = [] %}
+{% for rnd in bracket.rounds %}
+  {% if rnd.round == bracket.current_round %}
+    {% set next_matches = rnd.matches %}
+  {% endif %}
+{% endfor %}
+
+{% if next_matches %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-title">Next Matches — Round {{ bracket.current_round }}</div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px;">
+    {% for m in next_matches %}
+    <div style="background:var(--bg); border:1px solid {% if m.player1 == my_team_ns.name or m.player2 == my_team_ns.name %}rgba(99,102,241,0.5){% else %}var(--border){% endif %}; border-radius:8px; padding:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:600; font-size:14px;{% if m.player1 == my_team_ns.name %} color:var(--accent);{% endif %}">{{ team_link(m.player1, bold=true) }}</span>
+        <span class="muted" style="font-size:12px;">vs</span>
+        <span style="font-weight:600; font-size:14px;{% if m.player2 == my_team_ns.name %} color:var(--accent);{% endif %}">{{ team_link(m.player2, bold=true) }}</span>
+      </div>
+      {% if data.meta.my_team_id %}
+        {% for team in data.teams %}
+          {% if team.name == m.player1 or team.name == m.player2 %}
+            {% if team.id != data.meta.my_team_id %}
+            <div style="margin-top:8px; text-align:center;">
+              <a href="/analysis/{{ team.id }}" class="btn btn-sm btn-accent">Analyze {{ team.name }}</a>
+            </div>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
+{# --- All Rounds --- #}
+<div class="card">
+  <div class="card-title">All Rounds</div>
+  {% for rnd in bracket.rounds %}
+  <div style="margin-bottom:16px;">
+    <h3 style="font-size:14px; margin-bottom:8px; color:{% if rnd.round == bracket.current_round %}var(--accent){% else %}var(--text-muted){% endif %};">
+      Round {{ rnd.round }}
+      {% if rnd.round == bracket.current_round %}<span style="font-size:11px; background:var(--accent); color:white; padding:1px 6px; border-radius:4px; margin-left:6px;">NEXT</span>{% endif %}
+    </h3>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      {% for m in rnd.matches %}
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:{% if m.player1 == my_team_ns.name or m.player2 == my_team_ns.name %}rgba(99,102,241,0.12){% else %}var(--bg-hover){% endif %}; border-radius:{% if m.id in match_details %}6px 6px 0 0{% else %}6px{% endif %}; font-size:13px;">
+          {% if m.state == 'complete' %}
+            <span style="{% if m.winner != m.player1 and m.player1 != my_team_ns.name %}color:var(--text-muted);{% endif %} min-width:200px;">{{ team_link(m.player1, bold=(m.winner == m.player1), highlight=(m.player1 == my_team_ns.name)) }}</span>
+            <span style="font-weight:700; color:var(--gold); min-width:40px; text-align:center;">{{ m.score1 }} - {{ m.score2 }}</span>
+            <span style="{% if m.winner != m.player2 and m.player2 != my_team_ns.name %}color:var(--text-muted);{% endif %}">{{ team_link(m.player2, bold=(m.winner == m.player2), highlight=(m.player2 == my_team_ns.name)) }}</span>
+            {% if m.id in match_details %}
+            <span class="muted" style="margin-left:auto; font-size:11px;">{{ match_details[m.id]|length }} game{{ 's' if match_details[m.id]|length > 1 else '' }}</span>
+            {% endif %}
+          {% else %}
+            <span style="min-width:200px;">{{ team_link(m.player1, highlight=(m.player1 == my_team_ns.name)) }}</span>
+            <span style="color:var(--text-muted); min-width:40px; text-align:center;">vs</span>
+            <span>{{ team_link(m.player2, highlight=(m.player2 == my_team_ns.name)) }}</span>
+          {% endif %}
+        </div>
+        {% if m.id in match_details %}
+        {% set games = match_details[m.id] %}
+        <details style="background:var(--bg); border:1px solid var(--border); border-top:none; border-radius:0 0 6px 6px; margin-bottom:2px;">
+          <summary style="padding:6px 12px; font-size:11px; cursor:pointer; color:var(--text-muted); user-select:none;">
+            Match Details ({{ games|length }} game{{ 's' if games|length > 1 else '' }})
+          </summary>
+          <div style="padding:10px 14px;">
+            {% for game in games %}
+            {% if games|length > 1 %}
+            <div style="font-size:11px; font-weight:700; color:var(--gold); margin-bottom:6px; margin-top:{% if not loop.first %}16px{% else %}0{% endif %}; padding-bottom:4px; border-bottom:1px solid var(--border);">
+              Game {{ loop.index }}{% if game.duration %} &middot; {{ game.duration }}{% endif %}{% if game.date %} &middot; {{ game.date }}{% endif %}
+            </div>
+            {% endif %}
+            {% set w_players = game.team1_players if game.winner == game.team1 else game.team2_players %}
+            {% set l_players = game.team2_players if game.winner == game.team1 else game.team1_players %}
+            {% set w_name = game.winner %}
+            {% set l_name = game.team2 if game.winner == game.team1 else game.team1 %}
+
+            {# --- Winner --- #}
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+              <span style="font-size:11px; font-weight:700; color:var(--green); background:rgba(34,197,94,0.1); padding:1px 6px; border-radius:3px;">WIN</span>
+              <span style="font-size:12px; font-weight:600; {% if w_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ w_name }}</span>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+              {% for p in w_players %}
+              <div style="display:flex; align-items:center; gap:4px; background:var(--bg-hover); padding:4px 8px 4px 4px; border-radius:6px; font-size:11px;">
+                {% if p.champion %}<img src="{{ p.champion|champion_name_icon }}" style="width:24px; height:24px; border-radius:4px;" onerror="this.style.display='none'" alt="{{ p.champion }}" title="{{ p.champion }}">{% endif %}
+                <span style="font-weight:600; {% if w_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ p.name }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
+            {# --- Loser --- #}
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+              <span style="font-size:11px; font-weight:700; color:var(--red); background:rgba(239,68,68,0.1); padding:1px 6px; border-radius:3px;">LOSS</span>
+              <span style="font-size:12px; font-weight:600; {% if l_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ l_name }}</span>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+              {% for p in l_players %}
+              <div style="display:flex; align-items:center; gap:4px; background:var(--bg-hover); padding:4px 8px 4px 4px; border-radius:6px; font-size:11px;">
+                {% if p.champion %}<img src="{{ p.champion|champion_name_icon }}" style="width:24px; height:24px; border-radius:4px;" onerror="this.style.display='none'" alt="{{ p.champion }}" title="{{ p.champion }}">{% endif %}
+                <span style="font-weight:600; {% if l_name == my_team_ns.name %}color:var(--accent);{% endif %}">{{ p.name }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
+            {% if game.image %}
+            <img src="/match-img/{{ game.image }}" style="width:100%; max-width:800px; border-radius:6px; margin-top:4px; border:1px solid var(--border);" alt="{{ game.image }}">
+            {% endif %}
+            {% if not loop.last %}<hr style="border:none; border-top:1px solid var(--border); margin:14px 0;">{% endif %}
+            {% endfor %}
+          </div>
+        </details>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}

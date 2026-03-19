@@ -1,0 +1,423 @@
+{
+  "name": "Spring 2026 League IMs",
+  "url": "https://challonge.com/Sp26LOLIMS",
+  "type": "round robin",
+  "state": "underway",
+  "total_rounds": 7,
+  "current_round": 5,
+  "rounds": [
+    {
+      "round": 1,
+      "matches": [
+        {
+          "id": 445852337,
+          "player1": "smiling friends",
+          "player1_id": 286019419,
+          "player2": "Animal fries in the bag",
+          "player2_id": 286019396,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019419,
+          "winner": "smiling friends"
+        },
+        {
+          "id": 445852338,
+          "player1": "Super Kracked Team (SKT)",
+          "player1_id": 286019418,
+          "player2": "5 Chuds and a Dream",
+          "player2_id": 286019398,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019418,
+          "winner": "Super Kracked Team (SKT)"
+        },
+        {
+          "id": 445852339,
+          "player1": "Cheeses and Cracker",
+          "player1_id": 286019399,
+          "player2": "Fries in the Bag",
+          "player2_id": 286019417,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019417,
+          "winner": "Fries in the Bag"
+        },
+        {
+          "id": 445852340,
+          "player1": "Team 4",
+          "player1_id": 286019400,
+          "player2": "Berkeley Legends Gaming (BLG)",
+          "player2_id": 286019401,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019401,
+          "winner": "Berkeley Legends Gaming (BLG)"
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "matches": [
+        {
+          "id": 445852341,
+          "player1": "Fries in the Bag",
+          "player1_id": 286019417,
+          "player2": "Team 4",
+          "player2_id": 286019400,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019417,
+          "winner": "Fries in the Bag"
+        },
+        {
+          "id": 445852342,
+          "player1": "Berkeley Legends Gaming (BLG)",
+          "player1_id": 286019401,
+          "player2": "smiling friends",
+          "player2_id": 286019419,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019419,
+          "winner": "smiling friends"
+        },
+        {
+          "id": 445852343,
+          "player1": "5 Chuds and a Dream",
+          "player1_id": 286019398,
+          "player2": "Cheeses and Cracker",
+          "player2_id": 286019399,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019399,
+          "winner": "Cheeses and Cracker"
+        },
+        {
+          "id": 445852344,
+          "player1": "Animal fries in the bag",
+          "player1_id": 286019396,
+          "player2": "Super Kracked Team (SKT)",
+          "player2_id": 286019418,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019418,
+          "winner": "Super Kracked Team (SKT)"
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "matches": [
+        {
+          "id": 445852345,
+          "player1": "Team 4",
+          "player1_id": 286019400,
+          "player2": "5 Chuds and a Dream",
+          "player2_id": 286019398,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019398,
+          "winner": "5 Chuds and a Dream"
+        },
+        {
+          "id": 445852346,
+          "player1": "Cheeses and Cracker",
+          "player1_id": 286019399,
+          "player2": "Animal fries in the bag",
+          "player2_id": 286019396,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019399,
+          "winner": "Cheeses and Cracker"
+        },
+        {
+          "id": 445852347,
+          "player1": "smiling friends",
+          "player1_id": 286019419,
+          "player2": "Super Kracked Team (SKT)",
+          "player2_id": 286019418,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019418,
+          "winner": "Super Kracked Team (SKT)"
+        },
+        {
+          "id": 445852348,
+          "player1": "Berkeley Legends Gaming (BLG)",
+          "player1_id": 286019401,
+          "player2": "Fries in the Bag",
+          "player2_id": 286019417,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019417,
+          "winner": "Fries in the Bag"
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "matches": [
+        {
+          "id": 445852349,
+          "player1": "Super Kracked Team (SKT)",
+          "player1_id": 286019418,
+          "player2": "Cheeses and Cracker",
+          "player2_id": 286019399,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019399,
+          "winner": "Cheeses and Cracker"
+        },
+        {
+          "id": 445852350,
+          "player1": "5 Chuds and a Dream",
+          "player1_id": 286019398,
+          "player2": "Berkeley Legends Gaming (BLG)",
+          "player2_id": 286019401,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019398,
+          "winner": "5 Chuds and a Dream"
+        },
+        {
+          "id": 445852351,
+          "player1": "Animal fries in the bag",
+          "player1_id": 286019396,
+          "player2": "Team 4",
+          "player2_id": 286019400,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019400,
+          "winner": "Team 4"
+        },
+        {
+          "id": 445852352,
+          "player1": "Fries in the Bag",
+          "player1_id": 286019417,
+          "player2": "smiling friends",
+          "player2_id": 286019419,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019417,
+          "winner": "Fries in the Bag"
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "matches": [
+        {
+          "id": 445852353,
+          "player1": "Fries in the Bag",
+          "player1_id": 286019417,
+          "player2": "5 Chuds and a Dream",
+          "player2_id": 286019398,
+          "state": "complete",
+          "score1": 1,
+          "score2": 0,
+          "winner_id": 286019417,
+          "winner": "Fries in the Bag"
+        },
+        {
+          "id": 445852354,
+          "player1": "Team 4",
+          "player1_id": 286019400,
+          "player2": "Super Kracked Team (SKT)",
+          "player2_id": 286019418,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852355,
+          "player1": "Berkeley Legends Gaming (BLG)",
+          "player1_id": 286019401,
+          "player2": "Animal fries in the bag",
+          "player2_id": 286019396,
+          "state": "complete",
+          "score1": 0,
+          "score2": 1,
+          "winner_id": 286019396,
+          "winner": "Animal fries in the bag"
+        },
+        {
+          "id": 445852356,
+          "player1": "smiling friends",
+          "player1_id": 286019419,
+          "player2": "Cheeses and Cracker",
+          "player2_id": 286019399,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "matches": [
+        {
+          "id": 445852357,
+          "player1": "Super Kracked Team (SKT)",
+          "player1_id": 286019418,
+          "player2": "Berkeley Legends Gaming (BLG)",
+          "player2_id": 286019401,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852358,
+          "player1": "Animal fries in the bag",
+          "player1_id": 286019396,
+          "player2": "Fries in the Bag",
+          "player2_id": 286019417,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852359,
+          "player1": "5 Chuds and a Dream",
+          "player1_id": 286019398,
+          "player2": "smiling friends",
+          "player2_id": 286019419,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852360,
+          "player1": "Cheeses and Cracker",
+          "player1_id": 286019399,
+          "player2": "Team 4",
+          "player2_id": 286019400,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "matches": [
+        {
+          "id": 445852361,
+          "player1": "Berkeley Legends Gaming (BLG)",
+          "player1_id": 286019401,
+          "player2": "Cheeses and Cracker",
+          "player2_id": 286019399,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852362,
+          "player1": "smiling friends",
+          "player1_id": 286019419,
+          "player2": "Team 4",
+          "player2_id": 286019400,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852363,
+          "player1": "Fries in the Bag",
+          "player1_id": 286019417,
+          "player2": "Super Kracked Team (SKT)",
+          "player2_id": 286019418,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        },
+        {
+          "id": 445852364,
+          "player1": "5 Chuds and a Dream",
+          "player1_id": 286019398,
+          "player2": "Animal fries in the bag",
+          "player2_id": 286019396,
+          "state": "open",
+          "score1": null,
+          "score2": null,
+          "winner_id": null,
+          "winner": null
+        }
+      ]
+    }
+  ],
+  "standings": [
+    {
+      "name": "Fries in the Bag",
+      "wins": 5,
+      "losses": 0
+    },
+    {
+      "name": "Super Kracked Team (SKT)",
+      "wins": 3,
+      "losses": 1
+    },
+    {
+      "name": "Cheeses and Cracker",
+      "wins": 3,
+      "losses": 1
+    },
+    {
+      "name": "smiling friends",
+      "wins": 2,
+      "losses": 2
+    },
+    {
+      "name": "5 Chuds and a Dream",
+      "wins": 2,
+      "losses": 3
+    },
+    {
+      "name": "Team 4",
+      "wins": 1,
+      "losses": 3
+    },
+    {
+      "name": "Berkeley Legends Gaming (BLG)",
+      "wins": 1,
+      "losses": 4
+    },
+    {
+      "name": "Animal fries in the bag",
+      "wins": 1,
+      "losses": 4
+    }
+  ]
+}

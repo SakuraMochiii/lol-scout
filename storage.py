@@ -32,7 +32,7 @@ def load() -> dict:
             data = default_tournament()
             save(data)
             return data
-        with open(DATA_FILE, "r") as f:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
 
 
@@ -40,8 +40,8 @@ def save(data: dict) -> None:
     with _lock:
         DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
         tmp = str(DATA_FILE) + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump(data, f, indent=2)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
         os.replace(tmp, DATA_FILE)
 
 
